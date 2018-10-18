@@ -1,0 +1,106 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : Jul 20, 2017, 9:55:02 AM
+    Author     : Eliel Avelar <ElielAbisai.AvelarJaimes@muehlbauer.de>
+*/
+
+.bs-glyphicons {
+    background-color: #f9f9f9;
+    border: 1px solid #fff;
+    float: left;
+    font-size: 10px;
+    height: 114px;
+    line-height: 1.4;
+    padding: 10px;
+    text-align: center;
+    width: auto;
+}
+
+.bs-glyphicons-giant {
+    background-color: #f9f9f9;
+    border: 1px solid #fff;
+    float: left;
+    font-size: 10px;
+    height: 164px;
+    line-height: 1.4;
+    padding: 10px;
+    text-align: center;
+    width: auto;
+}
+
+.bs-glyphicons .glyphicon {
+    font-size: 24px;
+    margin-bottom: 10px;
+    margin-top: 5px;
+}
+
+.bs-glyphicons .glyphicon-lg .glyphicon {
+    font-size: 64px;
+    margin-bottom: 10px;
+    margin-top: 5px;
+}
+
+.bs-glyphicons-giant .glyphicon {
+    font-size: 128px;
+    margin-bottom: 5px;
+    margin-top: 5px;
+}
+
+.readonly {
+    cursor: not-allowed;
+    background-color: #f8f5f0;
+    opacity: 1;
+}
+
+.main-header .logo img {
+    height: 50px;
+}
+
+.sidebar-menu > li {
+    line-height: 2em;
+}
+
+.sidebar-menu > li:hover {
+    background-color: orangered;
+    margin-right: 0px;
+}
+
+.treeview-menu > li > a span:hover {
+    color: #bfbfbf;
+}
+
+.treeview-menu > li {
+    width: 100%;
+}
+
+@media(min-width:768px) {
+    
+    .sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > a > span:not(.pull-right), .sidebar-mini.sidebar-collapse .sidebar-menu > li:hover > .treeview-menu
+    {
+        width: 275px !important;
+    }
+}
+
+.main-sidebar, .left-side {
+    width: 250px !important;
+}
+
+.content-header {
+    padding-left: 25px !important;
+}
+
+.content {
+    padding-left: 28px !important; 
+}
+
+.main-footer p.pull-right {
+    margin-right: 5px !important;
+}
+
+.content-wrapper, .right-side, .main-footer {
+    margin-left: 250px !important;
+}

@@ -8,6 +8,7 @@ $params = array_merge(
 
 return [
     'id' => 'app-backend',
+    'name'=>'SwordPlay @dev',
     'basePath' => dirname(__DIR__),
     'controllerNamespace' => 'backend\controllers',
     'bootstrap' => ['log'],
@@ -48,7 +49,15 @@ return [
                 ['class' => 'yii\rest\UrlRule', 'controller' => 'site'],
             ],
         ],
-        
+        'customFunctions'=>[
+            'class'=>'app\components\CustomFunctions',
+        ],
+        'view' => [
+            'theme' => [
+                'class' => \webtoolsnz\AdminLte\Theme::className(),
+                'skin' => \webtoolsnz\AdminLte\Theme::SKIN_BLUE_DARK,
+            ]
+        ],
     ],
     'params' => $params,
 ];
