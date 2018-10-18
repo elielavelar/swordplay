@@ -6,42 +6,53 @@ use yii\base\NotSupportedException;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 use yii\web\IdentityInterface;
+use yii\db\Expression;
 
 /**
  * User model
  *
- * @property integer $id
- * @property string $username
- * @property string $password_hash
- * @property string $password_reset_token
- * @property string $email
- * @property string $auth_key
- * @property integer $status
- * @property integer $created_at
- * @property integer $updated_at
+ * @property integer $Id
+ * @property string $Username
+ * @property string $PasswordHash
+ * @property string $PasswordResetToken
+ * @property string $Email
+ * @property string $AuthKey
+ * @property integer $IdState
+ * @property integer $IdProfile
+ * @property string $CreatedDate
+ * @property string $UpdatedDate
  * @property string $password write-only password
  */
 class User extends ActiveRecord implements IdentityInterface
 {
-    const STATUS_DELETED = 0;
-    const STATUS_ACTIVE = 10;
+    const STATE_ACTIVE = 'ACT';
+    const STATE_INACTIVE = 'INA';
 
+    public $_password = NULL;
+    public $_passwordconfirm = NULL;
 
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
-        return '{{%user}}';
+        return '{{%users}}';
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function behaviors()
     {
         return [
-            TimestampBehavior::className(),
+            'timestamp' => [
+                'class' => TimestampBehavior::className(),
+                'attributes' => [
+                    ActiveRecord::EVENT_BEFORE_INSERT => ['CreatedDate'],
+                    ActiveRecord::EVENT_BEFORE_UPDATE => ['UpdatedDate'],
+                ],
+                'value'=>new Expression('NOW()'),
+            ],
         ];
     }
 
@@ -51,6 +62,9 @@ class User extends ActiveRecord implements IdentityInterface
     public function rules()
     {
         return [
+            [['Username','Email','IdState','IdProfile'],'required','message'=>'Campo {attribute} no puede quedar vacío'],
+            [['IdState','IdProfile'],'integer'],
+            [['Email'],'email'],
             ['status', 'default', 'value' => self::STATUS_ACTIVE],
             ['status', 'in', 'range' => [self::STATUS_ACTIVE, self::STATUS_DELETED]],
         ];

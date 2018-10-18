@@ -17,7 +17,16 @@
         "php": ">=5.4.0",
         "yiisoft/yii2": "~2.0.6",
         "yiisoft/yii2-bootstrap": "~2.0.0",
-        "yiisoft/yii2-swiftmailer": "~2.0.0 || ~2.1.0"
+        "yiisoft/yii2-swiftmailer": "~2.0.0 || ~2.1.0",
+        "webtoolsnz/yii2-admin-lte": "*",
+        "yii2tech/spreadsheet": "^1.0",
+        "components/font-awesome": "^5.0.6",
+        "omnilight/yii2-sweetalert": "1.0.*",
+        "kartik-v/yii2-widget-activeform": "@dev",
+        "kartik-v/yii2-detail-view": "*",
+        "kartik-v/yii2-widget-fileinput": "@dev",
+        "kartik-v/yii2-password": "@dev",
+        "kartik-v/yii2-widget-select2": "@dev"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.0.0",
@@ -29,7 +38,10 @@
     "config": {
         "process-timeout": 1800,
         "fxp-asset": {
-            "enabled": false
+            "installer-paths": {
+                "npm-asset-library": "vendor/npm",
+                "bower-asset-library": "vendor/bower"
+            }
         }
     },
     "repositories": [
