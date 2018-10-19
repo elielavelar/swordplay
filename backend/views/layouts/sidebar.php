@@ -1,8 +1,8 @@
 <?php 
 use yii\helpers\Url;
-use app\components\CustomMenu;
-use app\models\Settingsdetail;
-use app\models\Options;
+use backend\components\CustomMenu;
+use backend\models\Settingsdetail;
+use backend\models\Options;
 
     if ($this->theme->layout == \webtoolsnz\AdminLte\Theme::LAYOUT_SIDEBAR_MINI) { 
 
@@ -17,7 +17,7 @@ use app\models\Options;
     $_controller = Yii::$app->controller->id;
     if($_controller == 'site'){
         $setting = Settingsdetail::find()
-                ->joinWith('idSetting b')
+                ->joinWith('setting b')
                 ->where(['b.KeyWord' => 'General','b.Code'=> Options::DEFAULT_OPTION,'settingsdetail.Code' => Options::DEFAULT_OPTION])
                 ->one();
         if(!empty($setting)){
