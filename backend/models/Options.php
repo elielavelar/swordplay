@@ -14,27 +14,29 @@ use yii\helpers\Html;
 /**
  * This is the model class for table "options".
  *
- * @property integer $Id
+ * @property int $Id
  * @property string $Name
  * @property string $KeyWord
- * @property integer $IdState
- * @property integer $IdType
- * @property integer $IdParent
+ * @property int $IdState
+ * @property int $IdType
  * @property string $Icon
  * @property string $Url
- * @property integer $IdUrlType
- * @property integer $Sort
+ * @property int $IdUrlType
+ * @property int $Sort
  * @property string $Description
- * @property integer $ItemMenu
- * @property integer $RequireAuth
+ * @property int $ItemMenu
+ * @property int $RequireAuth
+ * @property int $IdParent
  *
- * @property State $idState
- * @property Type $idType
- * @property Type $idUrlType
- * @property Options $idParent
+ * @property Options $parent
  * @property Options[] $options
- * @property Profileoptions[] $profileoptions 
+ * @property States $state
+ * @property Types $type
+ * @property Types $urlType
+ * @property Profileoptions[] $profileoptions
+ * @property Profiles[] $profiles
  * @property Useroptions[] $useroptions
+ * @property Users[] $users
  */
 class Options extends \yii\db\ActiveRecord
 {
@@ -130,7 +132,7 @@ class Options extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getIdState()
+    public function getState()
     {
         return $this->hasOne(State::className(), ['Id' => 'IdState']);
     }
@@ -147,7 +149,7 @@ class Options extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getIdType()
+    public function getType()
     {
         return $this->hasOne(Type::className(), ['Id' => 'IdType']);
     }
@@ -164,7 +166,7 @@ class Options extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getIdUrlType()
+    public function getUrlType()
     {
         return $this->hasOne(Type::className(), ['Id' => 'IdUrlType']);
     }
@@ -181,7 +183,7 @@ class Options extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getIdParent()
+    public function getParent()
     {
         return $this->hasOne(Options::className(), ['Id' => 'IdParent']);
     }
@@ -205,9 +207,25 @@ class Options extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
+    public function getProfiles()
+    {
+        return $this->hasMany(Profiles::className(), ['Id' => 'IdProfile'])->viaTable('profileoptions', ['IdOption' => 'Id']);
+    }
+    
+    /**
+     * @return \yii\db\ActiveQuery
+     */
     public function getUseroptions()
     {
         return $this->hasMany(Useroptions::className(), ['IdOption' => 'Id']);
+    }
+    
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getUsers()
+    {
+        return $this->hasMany(Users::className(), ['Id' => 'IdUser'])->viaTable('useroptions', ['IdOption' => 'Id']);
     }
     
     /*ACTION METHODS*/

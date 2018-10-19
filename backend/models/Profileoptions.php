@@ -10,6 +10,9 @@ use Yii;
  * @property int $IdProfile
  * @property int $IdOption
  * @property int $Enabled
+ *
+ * @property Options $option
+ * @property Profiles $profile
  */
 class Profileoptions extends \yii\db\ActiveRecord
 {
@@ -30,6 +33,8 @@ class Profileoptions extends \yii\db\ActiveRecord
             [['IdProfile', 'IdOption'], 'required'],
             [['IdProfile', 'IdOption', 'Enabled'], 'integer'],
             [['IdProfile', 'IdOption'], 'unique', 'targetAttribute' => ['IdProfile', 'IdOption']],
+            [['IdOption'], 'exist', 'skipOnError' => true, 'targetClass' => Options::className(), 'targetAttribute' => ['IdOption' => 'Id']],
+            [['IdProfile'], 'exist', 'skipOnError' => true, 'targetClass' => Profiles::className(), 'targetAttribute' => ['IdProfile' => 'Id']],
         ];
     }
 
@@ -44,4 +49,21 @@ class Profileoptions extends \yii\db\ActiveRecord
             'Enabled' => 'Enabled',
         ];
     }
+    
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getOption()
+    {
+        return $this->hasOne(Options::className(), ['Id' => 'IdOption']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getProfile()
+    {
+        return $this->hasOne(Profiles::className(), ['Id' => 'IdProfile']);
+    }
+    
 }
