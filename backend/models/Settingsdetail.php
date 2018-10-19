@@ -16,6 +16,10 @@ use Yii;
  * @property string $Value
  * @property int $Sort
  * @property string $Description
+ *
+ * @property Settings $setting
+ * @property States $state
+ * @property Types $type
  */
 class Settingsdetail extends \yii\db\ActiveRecord
 {
@@ -38,6 +42,9 @@ class Settingsdetail extends \yii\db\ActiveRecord
             [['Value', 'Description'], 'string'],
             [['Name'], 'string', 'max' => 50],
             [['Code'], 'string', 'max' => 30],
+            [['IdSetting'], 'exist', 'skipOnError' => true, 'targetClass' => Settings::className(), 'targetAttribute' => ['IdSetting' => 'Id']],
+            [['IdState'], 'exist', 'skipOnError' => true, 'targetClass' => States::className(), 'targetAttribute' => ['IdState' => 'Id']],
+            [['IdType'], 'exist', 'skipOnError' => true, 'targetClass' => Types::className(), 'targetAttribute' => ['IdType' => 'Id']],
         ];
     }
 
@@ -57,5 +64,29 @@ class Settingsdetail extends \yii\db\ActiveRecord
             'Sort' => 'Sort',
             'Description' => 'Description',
         ];
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getSetting()
+    {
+        return $this->hasOne(Settings::className(), ['Id' => 'IdSetting']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getState()
+    {
+        return $this->hasOne(States::className(), ['Id' => 'IdState']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getType()
+    {
+        return $this->hasOne(Types::className(), ['Id' => 'IdType']);
     }
 }

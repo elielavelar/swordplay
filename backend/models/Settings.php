@@ -17,6 +17,7 @@ use Yii;
  *
  * @property States $state
  * @property Types $type
+ * @property Settingsdetail[] $settingsdetails
  */
 class Settings extends \yii\db\ActiveRecord
 {
@@ -75,5 +76,13 @@ class Settings extends \yii\db\ActiveRecord
     public function getType()
     {
         return $this->hasOne(Types::className(), ['Id' => 'IdType']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getSettingsdetails()
+    {
+        return $this->hasMany(Settingsdetail::className(), ['IdSetting' => 'Id']);
     }
 }
