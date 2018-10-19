@@ -1,2 +1,2 @@
 # swordplay
-Yii2 IDE for basement ERP application
+Yii2 application base for modular generic ERP
