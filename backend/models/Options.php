@@ -3,8 +3,8 @@
 namespace backend\models;
 
 use Yii;
-use common\models\State;
-use common\models\Type;
+use common\models\States;
+use common\models\Types;
 use app\components\AuthorizationFunctions;
 
 use yii\helpers\ArrayHelper;
@@ -98,9 +98,9 @@ class Options extends \yii\db\ActiveRecord
             [['Url'], 'string', 'max' => 100],
             [['KeyWord'], 'unique'],
             [['Sort'], 'unique','targetAttribute'=>['IdParent','Sort'],'message'=>'El Orden {value} ya ha sido utilizado para está opción padre'],
-            [['IdState'], 'exist', 'skipOnError' => true, 'targetClass' => State::className(), 'targetAttribute' => ['IdState' => 'Id']],
-            [['IdType'], 'exist', 'skipOnError' => true, 'targetClass' => Type::className(), 'targetAttribute' => ['IdType' => 'Id']],
-            [['IdUrlType'], 'exist', 'skipOnError' => true, 'targetClass' => Type::className(), 'targetAttribute' => ['IdUrlType' => 'Id']],
+            [['IdState'], 'exist', 'skipOnError' => true, 'targetClass' => States::className(), 'targetAttribute' => ['IdState' => 'Id']],
+            [['IdType'], 'exist', 'skipOnError' => true, 'targetClass' => Types::className(), 'targetAttribute' => ['IdType' => 'Id']],
+            [['IdUrlType'], 'exist', 'skipOnError' => true, 'targetClass' => Types::className(), 'targetAttribute' => ['IdUrlType' => 'Id']],
             [['IdParent'], 'exist', 'skipOnError' => true, 'targetClass' => Options::className(), 'targetAttribute' => ['IdParent' => 'Id']],
             [['ItemMenu'],'in','range'=>[0,1]],
         ];
@@ -134,12 +134,12 @@ class Options extends \yii\db\ActiveRecord
      */
     public function getState()
     {
-        return $this->hasOne(State::className(), ['Id' => 'IdState']);
+        return $this->hasOne(States::className(), ['Id' => 'IdState']);
     }
     
     public function getStates(){
         try {
-            $droptions = State::findAll(['KeyWord'=>StringHelper::basename(self::className())]);
+            $droptions = States::findAll(['KeyWord'=>StringHelper::basename(self::className())]);
             return ArrayHelper::map($droptions, 'Id', 'Name');
         } catch (Exception $ex) {
             throw $ex;
@@ -151,12 +151,12 @@ class Options extends \yii\db\ActiveRecord
      */
     public function getType()
     {
-        return $this->hasOne(Type::className(), ['Id' => 'IdType']);
+        return $this->hasOne(Types::className(), ['Id' => 'IdType']);
     }
     
     public function getTypes(){
         try {
-            $droptions = Type::findAll(['KeyWord'=>StringHelper::basename(self::className())]);
+            $droptions = Types::findAll(['KeyWord'=>StringHelper::basename(self::className())]);
             return ArrayHelper::map($droptions, 'Id', 'Name');
         } catch (Exception $ex) {
             throw $ex;
@@ -168,12 +168,12 @@ class Options extends \yii\db\ActiveRecord
      */
     public function getUrlType()
     {
-        return $this->hasOne(Type::className(), ['Id' => 'IdUrlType']);
+        return $this->hasOne(Types::className(), ['Id' => 'IdUrlType']);
     }
     
     public function getUrlTypes(){
         try {
-            $droptions = Type::findAll(['KeyWord'=>'Url']);
+            $droptions = Types::findAll(['KeyWord'=>'Url']);
             return ArrayHelper::map($droptions, 'Id', 'Name');
         } catch (Exception $ex) {
             throw $ex;
@@ -255,7 +255,7 @@ class Options extends \yii\db\ActiveRecord
     
     private function _createByType(){
         try {
-            $type = Type::findOne(['Id'=>  $this->IdType]);
+            $type = Types::findOne(['Id'=>  $this->IdType]);
             if($type != NULL){
                 $this->_setByType($type);
             }
@@ -292,7 +292,7 @@ class Options extends \yii\db\ActiveRecord
     
     private function _deleteByType(){
         try {
-            $code = $this->IdType ? $this->idType->Code:self::TYPE_PERMISSION;
+            $code = $this->IdType ? $this->type->Code:self::TYPE_PERMISSION;
             switch ($code) {
                 case self::TYPE_MODULE:
                     $this->_deleteModule();
@@ -343,7 +343,7 @@ class Options extends \yii\db\ActiveRecord
             $model->ItemMenu = 0;
             $model->RequireAuth = $this->RequireAuth;
             $model->Url = NULL;
-            $model->IdType = Type::findOne(['KeyWord'=> StringHelper::basename(self::className()),'Code'=> self::TYPE_GROUP])->Id;
+            $model->IdType = Types::findOne(['KeyWord'=> StringHelper::basename(self::className()),'Code'=> self::TYPE_GROUP])->Id;
             $model->IdUrlType = $this->IdUrlType;
             $model->IdState = $this->IdState;
             $model->Description = 'Grupo por Defecto';
@@ -364,7 +364,7 @@ class Options extends \yii\db\ActiveRecord
             if($this->_validateExists()){
                 return $this->_updatePermission();
             } else {
-                return $this->auth->createGroup($this->KeyWord, $this->idParent->KeyWord);
+                return $this->auth->createGroup($this->KeyWord, $this->parent->KeyWord);
             }
         } catch (Exception $ex) {
             throw $ex;
@@ -376,7 +376,7 @@ class Options extends \yii\db\ActiveRecord
             if($this->_validateExists()){
                 return $this->_updatePermission();
             } else {
-                return $this->auth->createController($this->KeyWord, $this->idParent->KeyWord);
+                return $this->auth->createController($this->KeyWord, $this->parent->KeyWord);
             }
         } catch (Exception $ex) {
             throw $ex;
@@ -388,7 +388,7 @@ class Options extends \yii\db\ActiveRecord
             if($this->_validateExists()){
                 return $this->_updatePermission();;
             } else {
-                return$this->auth->createAction($this->KeyWord, $this->idParent->KeyWord);
+                return$this->auth->createAction($this->KeyWord, $this->parent->KeyWord);
             }
         } catch (Exception $ex) {
             throw $ex;
@@ -400,7 +400,7 @@ class Options extends \yii\db\ActiveRecord
             if($this->_validateExists()){
                 return $this->_updatePermission();
             } else {
-                return$this->auth->createPermission($this->KeyWord, $this->idParent->KeyWord);
+                return$this->auth->createPermission($this->KeyWord, $this->parent->KeyWord);
             }
         } catch (Exception $ex) {
             throw $ex;
@@ -430,7 +430,7 @@ class Options extends \yii\db\ActiveRecord
     private function _deleteGroup(){
         try {
             if($this->_validateExists()){
-                return $this->auth->removeGroup($this->KeyWord, $this->idParent->KeyWord);
+                return $this->auth->removeGroup($this->KeyWord, $this->parent->KeyWord);
             }
         } catch (Exception $ex) {
             throw $ex;
@@ -440,7 +440,7 @@ class Options extends \yii\db\ActiveRecord
     private function _deleteController(){
         try {
             if($this->_validateExists()){
-                return $this->auth->removeController($this->KeyWord, $this->idParent->KeyWord);
+                return $this->auth->removeController($this->KeyWord, $this->parent->KeyWord);
             }
         } catch (Exception $ex) {
             throw $ex;
@@ -450,7 +450,7 @@ class Options extends \yii\db\ActiveRecord
     private function _deleteAction(){
         try {
             if($this->_validateExists()){
-                return $this->auth->removeAction($this->KeyWord, $this->idParent->KeyWord);
+                return $this->auth->removeAction($this->KeyWord, $this->parent->KeyWord);
             }
         } catch (Exception $ex) {
             throw $ex;
@@ -460,7 +460,7 @@ class Options extends \yii\db\ActiveRecord
     private function _deletePermission(){
         try {
             if($this->_validateExists()){
-                return $this->auth->removePermission($this->KeyWord, $this->idParent->KeyWord);
+                return $this->auth->removePermission($this->KeyWord, $this->parent->KeyWord);
             }
         } catch (Exception $ex) {
             throw $ex;
@@ -502,8 +502,8 @@ class Options extends \yii\db\ActiveRecord
     private static function filterChildren($idparent = NULL, $criteria = []){
         try {
             $options = self::find()
-                    ->joinWith('idType b')
-                    ->joinWith('idState c')
+                    ->joinWith('type b')
+                    ->joinWith('state c')
                     ->where($criteria)
                     ->andWhere(['options.IdParent'=>$idparent])
                     ->orderBy(['options.Sort'=>SORT_ASC])->all();
@@ -534,7 +534,7 @@ class Options extends \yii\db\ActiveRecord
             if($opt == NULL){
                 return "";
             }
-            $code = $opt->IdType ? $opt->idType->Code:self::TYPE_PERMISSION;
+            $code = $opt->IdType ? $opt->type->Code:self::TYPE_PERMISSION;
             $table = "";
             $actions = "";
             switch ($code) {
@@ -556,7 +556,7 @@ class Options extends \yii\db\ActiveRecord
                         . $opt->Name;
                     $table .= "</td>";
                     $table .= "<td>"
-                            . ($opt->IdType ? $opt->idType->Name:'')
+                            . ($opt->IdType ? $opt->type->Name:'')
                             . "</td>";
                     $table .= "<td>"
                             . $opt->Url
@@ -573,7 +573,7 @@ class Options extends \yii\db\ActiveRecord
                         . $opt->Name;
                     $table .= "</td>";
                     $table .= "<td>"
-                            . ($opt->IdType ? $opt->idType->Name:'')
+                            . ($opt->IdType ? $opt->type->Name:'')
                             . "</td>";
                     $table .= "<td>"
                             . $opt->Url
@@ -590,7 +590,7 @@ class Options extends \yii\db\ActiveRecord
                         . $opt->Name;
                     $table .= "</td>";
                     $table .= "<td>"
-                            . ($opt->IdType ? $opt->idType->Name:'')
+                            . ($opt->IdType ? $opt->type->Name:'')
                             . "</td>";
                     $table .= "<td>"
                             . $opt->Url
@@ -601,7 +601,7 @@ class Options extends \yii\db\ActiveRecord
                     break;
                 case self::TYPE_PERMISSION:
                 default:
-                    $parentType = ($opt->IdParent ? ($opt->idParent->IdType ? $opt->idParent->idType->Code:self::TYPE_ACTION):self::TYPE_ACTION);
+                    $parentType = ($opt->IdParent ? ($opt->parent->IdType ? $opt->parent->type->Code:self::TYPE_ACTION):self::TYPE_ACTION);
                     $colspan = ($parentType == self::TYPE_ACTION ? 4:3);
                     $colspanName = ($parentType == self::TYPE_ACTION ? 1:2);
                     $table = "<tr>";
@@ -611,7 +611,7 @@ class Options extends \yii\db\ActiveRecord
                         . $opt->Name;
                     $table .= "</td>";
                     $table .= "<td>"
-                            . ($opt->IdType ? $opt->idType->Name:'')
+                            . ($opt->IdType ? $opt->type->Name:'')
                             . "</td>";
                     $table .= "<td>"
                             . $opt->Url
@@ -624,7 +624,7 @@ class Options extends \yii\db\ActiveRecord
                     . $opt->KeyWord
                     . "</td>";
             $table .= "<td>"
-                    . ($opt->IdState ? $opt->idState->Name:"")
+                    . ($opt->IdState ? $opt->state->Name:"")
                     . "</td>";
             $table .= "<td>"
                     . ($opt->ItemMenu == 1 ? "SI":"NO")
@@ -662,8 +662,8 @@ class Options extends \yii\db\ActiveRecord
             $options_list = [];
             foreach ($options as $opt){
                 $option = $opt->attributes;
-                $option['idType']= $opt->idType->attributes;
-                $option['idState']= $opt->idState->attributes;
+                $option['idType']= $opt->type->attributes;
+                $option['idState']= $opt->state->attributes;
                 $children = self::getChildren($option["Id"]);
                 $option["children"] = $children;
                 $options_list[$option['KeyWord']] = $option;
@@ -698,7 +698,7 @@ class Options extends \yii\db\ActiveRecord
                     $item =[];
                     if($child->Url){
                         $url = '@web/'.$child->Url;
-                        $item['url']= ($child->IdUrlType ? ($child->idUrlType->Code == Options::URL_OUTSIDE ? $child->Url:$url):$url);
+                        $item['url']= ($child->IdUrlType ? ($child->urlType->Code == Options::URL_OUTSIDE ? $child->Url:$url):$url);
                     } else {
                         $_items = $this->loadDefaultMenu($child);
                         $item['items'] = $_items;
@@ -734,7 +734,7 @@ class Options extends \yii\db\ActiveRecord
                     ];
                     if($child->Url){
                         $url = '@web/'.$child->Url;
-                        $item['url']= ($child->IdUrlType ? ($child->idUrlType->Code == Options::URL_OUTSIDE ? $child->Url:$url):$url);
+                        $item['url']= ($child->IdUrlType ? ($child->urlType->Code == Options::URL_OUTSIDE ? $child->Url:$url):$url);
                     } else {
                         $_items = $this->loadDefaultMenu($child);
                         $item['items'] = $_items;

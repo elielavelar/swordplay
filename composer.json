@@ -22,11 +22,10 @@
         "yii2tech/spreadsheet": "^1.0",
         "components/font-awesome": "^5.0.6",
         "omnilight/yii2-sweetalert": "1.0.*",
-        "kartik-v/yii2-widget-activeform": "@dev",
+        "kartik-v/yii2-widgets": "dev-master",
+        "kartik-v/yii2-helpers": "dev-master",
         "kartik-v/yii2-detail-view": "*",
-        "kartik-v/yii2-widget-fileinput": "@dev",
-        "kartik-v/yii2-password": "@dev",
-        "kartik-v/yii2-widget-select2": "@dev"
+        "kartik-v/yii2-password": "@dev"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.0.0",
