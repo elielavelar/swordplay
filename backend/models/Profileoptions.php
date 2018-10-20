@@ -3,6 +3,10 @@
 namespace backend\models;
 
 use Yii;
+use common\models\Profiles;
+use app\components\AuthorizationFunctions;
+use backend\models\Options;
+use yii\helpers\StringHelper;
 
 /**
  * This is the model class for table "profileoptions".
@@ -223,7 +227,7 @@ class Profileoptions extends \yii\db\ActiveRecord
                     . ($opt->ItemMenu == 1 ? "SI":"NO")
                     . "</td>";
             $table .= "<td class='action-column'>"; 
-            $tableName = StringHelper::basename(Profile::className()) ."[".StringHelper::basename(self::className())."][".$opt->Id."]";
+            $tableName = StringHelper::basename(Profiles::className()) ."[".StringHelper::basename(self::className())."][".$opt->Id."]";
             $table .= Html::checkbox($tableName, ($profileoption ? ($profileoption->Enabled ? TRUE:FALSE):FALSE), []);
             $table .= "</td>";
             $table .= "</tr>";

@@ -138,8 +138,8 @@ class User extends ActiveRecord implements IdentityInterface
             ['AuthKey', 'string'],
             [['FirstName','SecondName'],'string','max'=>30],
             [['LastName','SecondLastName'],'string','max'=>50],
-            [['IdState'], 'exist', 'skipOnError' => true, 'targetClass' => State::className(), 'targetAttribute' => ['IdState' => 'Id']],
-            [['IdState'], 'default','value'=>  State::findOne(['KeyWord'=>'User','Code'=>  self::STATE_ACTIVE])->Id],
+            [['IdState'], 'exist', 'skipOnError' => true, 'targetClass' => States::className(), 'targetAttribute' => ['IdState' => 'Id']],
+            [['IdState'], 'default','value'=>  States::findOne(['KeyWord'=>'User','Code'=>  self::STATE_ACTIVE])->Id],
             [['IdProfile'], 'exist', 'skipOnError' => true, 'targetClass' => Profiles::className(), 'targetAttribute' => ['IdProfile' => 'Id']],
             [['IdProfile'], 'default','value'=> Profiles::findOne(['Code'=>  self::DEFAULT_PROFILE])->Id],
             ['_passwordconfirm', 'string', 'min' => 8],
@@ -183,7 +183,7 @@ class User extends ActiveRecord implements IdentityInterface
      */
     public static function findIdentity($id)
     {
-        return static::findOne(['id' => $id, 'IdState' => States::findOne(['KeyWord'=>'User','Code'=>self::STATE_ACTIVE])->Id]);
+        return static::findOne(['Id' => $id, 'IdState' => States::findOne(['KeyWord'=>'User','Code'=>self::STATE_ACTIVE])->Id]);
         #return static::findOne(['id' => $id, 'status' => self::STATUS_ACTIVE]);
     }
 

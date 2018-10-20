@@ -20,7 +20,7 @@ $this->params['breadcrumbs'][] = $this->title;
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
 
     <p>
-        <?= Yii::$app->customFunctions->userCan('userCreate') ? Html::a('Crear', ['create'], ['class' => 'btn btn-success']):"" ; ?>
+        <?= ""; #Yii::$app->customFunctions->userCan('userCreate') ? Html::a('Crear', ['create'], ['class' => 'btn btn-success']):"" ; ?>
     </p>
     <?= GridView::widget([
         'dataProvider' => $dataProvider,

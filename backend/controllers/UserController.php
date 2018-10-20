@@ -148,7 +148,7 @@ class UserController extends Controller
         $modelDetail = new Useroptions();
         $modelDetail->IdUser= $model->Id;
         
-        $set = \Yii::$app->customFunctions->userCan('general');
+        #$set = \Yii::$app->customFunctions->userCan('general');
         
         if ($model->load(Yii::$app->request->post())) {
             $post = Yii::$app->request->post(StringHelper::basename($model->className()));

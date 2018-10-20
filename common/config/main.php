@@ -38,5 +38,12 @@ return [
         'customFunctions'=>[
             'class'=>'app\components\CustomFunctions',
         ],
+        'authManager'=>[
+            'class'=>'yii\rbac\DbManager',
+            #'connectionID'=>'db',
+            'itemTable'=>'authitem', // Tabla que contiene los elementos de autorizacion
+            'itemChildTable'=>'authitemchild', // Tabla que contiene los elementos padre-hijo
+            'assignmentTable'=>'authassignment', // Tabla que contiene la signacion usuario-autorizacion
+        ],
     ],
 ];
