@@ -1,26 +1,28 @@
 <?php
 
 namespace backend\models;
+use common\models\Profile;
+use backend\models\Options;
+use kartik\helpers\Html;
+use yii\helpers\StringHelper;
+use backend\components\AuthorizationFunctions;
+use common\models\State;
+use common\models\Type;
 
 use Yii;
-use common\models\Profiles;
-use app\components\AuthorizationFunctions;
-use backend\models\Options;
-use yii\helpers\StringHelper;
 
 /**
  * This is the model class for table "profileoptions".
  *
- * @property int $IdProfile
- * @property int $IdOption
- * @property int $Enabled
+ * @property integer $IdProfile
+ * @property integer $IdOption
+ * @property integer $Enabled
  *
+ * @property Profile $profile
  * @property Options $option
- * @property Profiles $profile
  */
 class Profileoptions extends \yii\db\ActiveRecord
 {
-    
     private static $_idProfile;
     private $profileoptions;
     private $children = NULL;
@@ -30,14 +32,13 @@ class Profileoptions extends \yii\db\ActiveRecord
     
     public $_idParent;
     
-    
     function __construct($config = array()) {
         $this->auth = new AuthorizationFunctions();
         return parent::__construct($config);
     }
     
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public static function tableName()
     {
@@ -45,21 +46,21 @@ class Profileoptions extends \yii\db\ActiveRecord
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function rules()
     {
         return [
             [['IdProfile', 'IdOption'], 'required'],
             [['IdProfile', 'IdOption', 'Enabled'], 'integer'],
-            [['IdProfile', 'IdOption'], 'unique', 'targetAttribute' => ['IdProfile', 'IdOption']],
+            [['Enabled'],'default','value'=>1],
+            [['IdProfile'], 'exist', 'skipOnError' => true, 'targetClass' => Profile::className(), 'targetAttribute' => ['IdProfile' => 'Id']],
             [['IdOption'], 'exist', 'skipOnError' => true, 'targetClass' => Options::className(), 'targetAttribute' => ['IdOption' => 'Id']],
-            [['IdProfile'], 'exist', 'skipOnError' => true, 'targetClass' => Profiles::className(), 'targetAttribute' => ['IdProfile' => 'Id']],
         ];
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function attributeLabels()
     {
@@ -69,21 +70,21 @@ class Profileoptions extends \yii\db\ActiveRecord
             'Enabled' => 'Habilitado',
         ];
     }
-    
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getOption()
-    {
-        return $this->hasOne(Options::className(), ['Id' => 'IdOption']);
-    }
 
     /**
      * @return \yii\db\ActiveQuery
      */
     public function getProfile()
     {
-        return $this->hasOne(Profiles::className(), ['Id' => 'IdProfile']);
+        return $this->hasOne(Profile::className(), ['Id' => 'IdProfile']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getOption()
+    {
+        return $this->hasOne(Options::className(), ['Id' => 'IdOption']);
     }
     
     public static function getHtmlList($criteria = NULL){
@@ -134,8 +135,9 @@ class Profileoptions extends \yii\db\ActiveRecord
             }
             return $table;
         } catch (Exception $ex) {
-            throw $ex;
+            
         }
+        
     }
     
     private static function getHtmlChildren($option = []){
@@ -227,7 +229,7 @@ class Profileoptions extends \yii\db\ActiveRecord
                     . ($opt->ItemMenu == 1 ? "SI":"NO")
                     . "</td>";
             $table .= "<td class='action-column'>"; 
-            $tableName = StringHelper::basename(Profiles::className()) ."[".StringHelper::basename(self::className())."][".$opt->Id."]";
+            $tableName = StringHelper::basename(Profile::className()) ."[".StringHelper::basename(self::className())."][".$opt->Id."]";
             $table .= Html::checkbox($tableName, ($profileoption ? ($profileoption->Enabled ? TRUE:FALSE):FALSE), []);
             $table .= "</td>";
             $table .= "</tr>";
@@ -255,8 +257,20 @@ class Profileoptions extends \yii\db\ActiveRecord
     
     public function getMenuItems($opt = NULL){
         try {
-            $children = self::find()->joinWith('option b',true)
-                    ->where(['IdProfile'=>$opt->IdProfile,'b.ItemMenu'=>TRUE,'b.IdParent'=>$opt->IdOption])
+            $children = self::find()
+                    ->joinWith('option b',true)
+                    ->innerJoin('optionenvironment c', 'c.IdOption = b.Id')
+                    ->innerJoin('type d', 'd.Id = c.IdEnvironmentType')
+                    ->innerJoin('state e', 'e.Id = d.IdState')
+                    ->where([
+                        'profileoptions.IdProfile'=>$opt->IdProfile,'b.ItemMenu'=>TRUE,'b.IdParent'=>$opt->IdOption,
+                        'd.KeyWord' => StringHelper::basename(Optionenvironment::class),
+                        'd.Code' => Yii::$app->id,
+                        'c.Enabled' => Optionenvironment::ENABLED_VALUE,
+                        'e.KeyWord' => StringHelper::basename(Type::class),
+                        'e.Code' => Type::STATUS_ACTIVE,
+                    ])
+                    
                     ->orderBy(['b.Sort'=>SORT_ASC])
                     ->all();
             $items = [];
@@ -268,6 +282,7 @@ class Profileoptions extends \yii\db\ActiveRecord
             throw $ex;
         }
     }
+    
     
     public function getChildrenOptions($opt = NULL){
         try {
@@ -293,10 +308,6 @@ class Profileoptions extends \yii\db\ActiveRecord
             throw $ex;
         }
     }
-    
-    /**
-     * Authorization Permissions adminitration
-     */
     
     public function afterSave($insert, $changedAttributes) {
         $this->_createByType();
@@ -340,8 +351,11 @@ class Profileoptions extends \yii\db\ActiveRecord
         try {
             if(!empty($this->permissions)){
                 foreach ($this->profileoptions as $opt){
-                    if(!in_array($opt->Id, $this->permissions)){
-                        $opt->delete();
+                    if(!isset($this->permissions[$opt->IdOption])){
+                        if(!$opt->delete()){
+                            $message = $this->_gerErrors($opt->errors);
+                            throw new \Exception($message, 98001);  
+                        }
                     } 
                 }
             }
@@ -349,7 +363,6 @@ class Profileoptions extends \yii\db\ActiveRecord
             throw $ex;
         }
     }
-    
     
     private function _addNewPermissions(){
         try {
@@ -366,7 +379,6 @@ class Profileoptions extends \yii\db\ActiveRecord
     
     private function _createByType(){
         try {
-            
             $code = $this->IdOption ? ($this->option->IdType ? $this->option->type->Code:Options::TYPE_PERMISSION):Options::TYPE_PERMISSION;
             switch ($code) {
                 case Options::TYPE_MODULE:
@@ -383,11 +395,19 @@ class Profileoptions extends \yii\db\ActiveRecord
         }
     }
     
+    private function _assignModule(){
+        try {
+            $this->auth->assignRolePermission($this->profile->KeyWord, $this->option->KeyWord);
+        } catch (Exception $ex) {
+            throw $ex;
+        }
+    }
+    
     private function _assignPermission(){
         try {
             $this->auth->assignRolePermission($this->profile->KeyWord, $this->option->KeyWord);
         } catch (Exception $ex) {
-            
+            throw $ex;
         }
     }
     
@@ -447,7 +467,6 @@ class Profileoptions extends \yii\db\ActiveRecord
             throw $ex;
         }
     }
-    
     
     public function _getParent(){
         try {

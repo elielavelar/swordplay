@@ -3,9 +3,9 @@
 namespace backend\models;
 
 use Yii;
-use common\models\States;
-use common\models\Types;
-use app\components\AuthorizationFunctions;
+use common\models\State;
+use common\models\Type;
+use backend\components\AuthorizationFunctions;
 
 use yii\helpers\ArrayHelper;
 use yii\helpers\StringHelper;
@@ -14,29 +14,33 @@ use yii\helpers\Html;
 /**
  * This is the model class for table "options".
  *
- * @property int $Id
+ * @property integer $Id
  * @property string $Name
  * @property string $KeyWord
- * @property int $IdState
- * @property int $IdType
+ * @property integer $IdState
+ * @property integer $IdType
+ * @property integer $IdParent
  * @property string $Icon
  * @property string $Url
- * @property int $IdUrlType
- * @property int $Sort
+ * @property integer $IdUrlType
+ * @property integer $Sort
  * @property string $Description
- * @property int $ItemMenu
- * @property int $RequireAuth
- * @property int $IdParent
+ * @property integer $ItemMenu
+ * @property integer $RequireAuth
+ * @property integer $SaveLog
+ * @property integer $SaveTransaction
  *
+ * @property State $state
+ * @property Type $type
+ * @property Type $urlType
  * @property Options $parent
+ * @property Optionenvironment[] $optionenvironments
+ * @property Type[] $environmentTypes
  * @property Options[] $options
- * @property States $state
- * @property Types $type
- * @property Types $urlType
- * @property Profileoptions[] $profileoptions
- * @property Profiles[] $profiles
+ * @property Profileoptions[] $profileoptions 
+ * @property Profile[] $profiles
  * @property Useroptions[] $useroptions
- * @property Users[] $users
+ * @property User[] $users 
  */
 class Options extends \yii\db\ActiveRecord
 {
@@ -68,6 +72,16 @@ class Options extends \yii\db\ActiveRecord
     const DEFAULT_ICON = 'fa fa-sticky-note';
     
     const DEFAULT_OPTION = 'DFLTACT';
+     
+    const SAVE_LOG_ENABLED = 1;
+    const SAVE_LOG_DISABLED = 0;
+    
+    const SAVE_TRANSACTION_ENABLED = 1;
+    const SAVE_TRANSACION_DISABLED = 0;
+    
+    public $Optionenvironment = [];
+    public $_emptyEnvironments = FALSE;
+    public $_envoptions = [];
     /**
      * @inheritdoc
      */
@@ -81,7 +95,7 @@ class Options extends \yii\db\ActiveRecord
     {
         return 'options';
     }
-
+    
     /**
      * @inheritdoc
      */
@@ -89,7 +103,7 @@ class Options extends \yii\db\ActiveRecord
     {
         return [
             [['Name', 'KeyWord', 'IdState', 'IdType'], 'required','message'=>'Campo {attribute} no puede quedar vacío'],
-            [['IdState', 'IdType', 'IdUrlType', 'IdParent', 'Sort', 'ItemMenu','RequireAuth'], 'integer'],
+            [['IdState', 'IdType', 'IdUrlType', 'IdParent', 'Sort', 'ItemMenu','RequireAuth','SaveLog','SaveTransaction'], 'integer'],
             ['RequireAuth', 'in', 'range' => [self::REQUIRE_AUTH_FALSE, self::REQUIRE_AUTH_TRUE]],
             [['RequireAuth'], 'default','value'=> self::REQUIRE_AUTH_TRUE],
             [['Description'], 'string'],
@@ -98,11 +112,13 @@ class Options extends \yii\db\ActiveRecord
             [['Url'], 'string', 'max' => 100],
             [['KeyWord'], 'unique'],
             [['Sort'], 'unique','targetAttribute'=>['IdParent','Sort'],'message'=>'El Orden {value} ya ha sido utilizado para está opción padre'],
-            [['IdState'], 'exist', 'skipOnError' => true, 'targetClass' => States::className(), 'targetAttribute' => ['IdState' => 'Id']],
-            [['IdType'], 'exist', 'skipOnError' => true, 'targetClass' => Types::className(), 'targetAttribute' => ['IdType' => 'Id']],
-            [['IdUrlType'], 'exist', 'skipOnError' => true, 'targetClass' => Types::className(), 'targetAttribute' => ['IdUrlType' => 'Id']],
+            [['IdState'], 'exist', 'skipOnError' => true, 'targetClass' => State::className(), 'targetAttribute' => ['IdState' => 'Id']],
+            [['IdType'], 'exist', 'skipOnError' => true, 'targetClass' => Type::className(), 'targetAttribute' => ['IdType' => 'Id']],
+            [['IdUrlType'], 'exist', 'skipOnError' => true, 'targetClass' => Type::className(), 'targetAttribute' => ['IdUrlType' => 'Id']],
             [['IdParent'], 'exist', 'skipOnError' => true, 'targetClass' => Options::className(), 'targetAttribute' => ['IdParent' => 'Id']],
             [['ItemMenu'],'in','range'=>[0,1]],
+            [['SaveLog'],'in','range'=>[self::SAVE_LOG_DISABLED, self::SAVE_LOG_ENABLED]],
+            [['SaveTransaction'],'in','range'=>[self::SAVE_TRANSACION_DISABLED, self::SAVE_TRANSACTION_ENABLED]],
         ];
     }
 
@@ -126,6 +142,9 @@ class Options extends \yii\db\ActiveRecord
             'ItemMenu' => 'Menú',
             'Enabled' => 'Habilitado',
             'RequireAuth' => 'Requiere Autenticación',
+            'envlist' => 'Entornos',
+            'SaveLog' => 'Guardar Bitacora',
+            'SaveTransaction' => 'Guardar Transacción',
         ];
     }
 
@@ -134,12 +153,12 @@ class Options extends \yii\db\ActiveRecord
      */
     public function getState()
     {
-        return $this->hasOne(States::className(), ['Id' => 'IdState']);
+        return $this->hasOne(State::className(), ['Id' => 'IdState']);
     }
     
     public function getStates(){
         try {
-            $droptions = States::findAll(['KeyWord'=>StringHelper::basename(self::className())]);
+            $droptions = State::findAll(['KeyWord'=>StringHelper::basename(self::className())]);
             return ArrayHelper::map($droptions, 'Id', 'Name');
         } catch (Exception $ex) {
             throw $ex;
@@ -151,12 +170,12 @@ class Options extends \yii\db\ActiveRecord
      */
     public function getType()
     {
-        return $this->hasOne(Types::className(), ['Id' => 'IdType']);
+        return $this->hasOne(Type::className(), ['Id' => 'IdType']);
     }
     
     public function getTypes(){
         try {
-            $droptions = Types::findAll(['KeyWord'=>StringHelper::basename(self::className())]);
+            $droptions = Type::findAll(['KeyWord'=>StringHelper::basename(self::className())]);
             return ArrayHelper::map($droptions, 'Id', 'Name');
         } catch (Exception $ex) {
             throw $ex;
@@ -168,12 +187,12 @@ class Options extends \yii\db\ActiveRecord
      */
     public function getUrlType()
     {
-        return $this->hasOne(Types::className(), ['Id' => 'IdUrlType']);
+        return $this->hasOne(Type::className(), ['Id' => 'IdUrlType']);
     }
     
     public function getUrlTypes(){
         try {
-            $droptions = Types::findAll(['KeyWord'=>'Url']);
+            $droptions = Type::findAll(['KeyWord'=>'Url']);
             return ArrayHelper::map($droptions, 'Id', 'Name');
         } catch (Exception $ex) {
             throw $ex;
@@ -207,28 +226,37 @@ class Options extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getProfiles()
-    {
-        return $this->hasMany(Profiles::className(), ['Id' => 'IdProfile'])->viaTable('profileoptions', ['IdOption' => 'Id']);
-    }
-    
-    /**
-     * @return \yii\db\ActiveQuery
-     */
     public function getUseroptions()
     {
         return $this->hasMany(Useroptions::className(), ['IdOption' => 'Id']);
     }
     
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getUsers()
+    public function getOptionenvironments()
     {
-        return $this->hasMany(Users::className(), ['Id' => 'IdUser'])->viaTable('useroptions', ['IdOption' => 'Id']);
+        return $this->hasMany(Optionenvironment::className(), ['IdOption' => 'Id']);
+    }
+    
+    public function getEnvironmentTypes()
+    {
+        return $this->hasMany(Type::className(), ['Id' => 'IdEnvironmentType'])->viaTable('optionenvironment', ['IdOption' => 'Id']);
+    }
+    
+    public function getEnvTypes(){
+        try {
+            $droptions = Type::find()->where(['KeyWord'=> StringHelper::basename(Optionenvironment::className())])
+                    ->orderBy(['Id' => SORT_ASC])
+                    ->all();
+            return ArrayHelper::map($droptions, 'Id', 'Name');
+        } catch (Exception $ex) {
+            throw $ex;
+        }
     }
     
     /*ACTION METHODS*/
+    public function afterFind() {
+        return parent::afterFind();
+    }
+    
     
     public function beforeSave($insert) {
         try {
@@ -245,6 +273,17 @@ class Options extends \yii\db\ActiveRecord
         $this->refresh();
         $this->_key = $this->attributes['KeyWord'];
         $this->_createByType();
+        if(!empty($this->Optionenvironment)){
+            $settings = $this->Optionenvironment;
+            $environments = new Optionenvironment();
+            $environments->IdOption = $this->Id;
+            $environments->setting = $settings;
+            $environments->_setEnvironments();
+        } elseif($this->_emptyEnvironments){
+            $environments = new Optionenvironment();
+            $environments->IdOption = $this->Id;
+            $environments->_resetAllEnvironments();
+        }
         return parent::afterSave($insert, $changedAttributes);
     }
     
@@ -255,7 +294,7 @@ class Options extends \yii\db\ActiveRecord
     
     private function _createByType(){
         try {
-            $type = Types::findOne(['Id'=>  $this->IdType]);
+            $type = Type::findOne(['Id'=>  $this->IdType]);
             if($type != NULL){
                 $this->_setByType($type);
             }
@@ -343,7 +382,7 @@ class Options extends \yii\db\ActiveRecord
             $model->ItemMenu = 0;
             $model->RequireAuth = $this->RequireAuth;
             $model->Url = NULL;
-            $model->IdType = Types::findOne(['KeyWord'=> StringHelper::basename(self::className()),'Code'=> self::TYPE_GROUP])->Id;
+            $model->IdType = Type::findOne(['KeyWord'=> StringHelper::basename(self::className()),'Code'=> self::TYPE_GROUP])->Id;
             $model->IdUrlType = $this->IdUrlType;
             $model->IdState = $this->IdState;
             $model->Description = 'Grupo por Defecto';
@@ -632,6 +671,12 @@ class Options extends \yii\db\ActiveRecord
             $table .= "<td>"
                     . ($opt->RequireAuth == 1 ? "SI":"NO")
                     . "</td>";
+            $table .= "<td>"
+                    . ($opt->SaveLog == 1 ? "SI":"NO")
+                    . "</td>";
+            $table .= "<td>"
+                    . ($opt->SaveTransaction == 1 ? "SI":"NO")
+                    . "</td>";
             $table .= "<td class='action-column'>". $actions. "</td>";
             $table .= "</tr>";
             return $table;
@@ -662,10 +707,11 @@ class Options extends \yii\db\ActiveRecord
             $options_list = [];
             foreach ($options as $opt){
                 $option = $opt->attributes;
-                $option['idType']= $opt->type->attributes;
-                $option['idState']= $opt->state->attributes;
+                $option['type']= $opt->type->attributes;
+                $option['state']= $opt->state->attributes;
                 $children = self::getChildren($option["Id"]);
                 $option["children"] = $children;
+                #$option["environments"] = $opt->optionenvironments;
                 $options_list[$option['KeyWord']] = $option;
             }
             return $options_list;
@@ -722,7 +768,17 @@ class Options extends \yii\db\ActiveRecord
             
             $items = [];
             $children = self::find()
-                    ->where(['IdParent'=>$opt->Id,'ItemMenu'=>TRUE, 'RequireAuth'=> FALSE])
+                    ->innerJoin('optionenvironment b', 'b.IdOption = options.Id')
+                    ->innerJoin('type c', 'c.Id = b.IdEnvironmentType')
+                    ->innerJoin('state d', 'd.Id = c.IdState')
+                    ->where([
+                        'options.IdParent'=>$opt->Id,'options.ItemMenu'=>TRUE, 'options.RequireAuth'=> FALSE,
+                        'c.KeyWord' => StringHelper::basename(Optionenvironment::class),
+                        'c.Code' => Yii::$app->id, 
+                        'b.Enabled' => Optionenvironment::ENABLED_VALUE,
+                        'd.KeyWord' => StringHelper::basename(Type::class),
+                        'd.Code'=> Type::STATUS_ACTIVE
+                    ])
                     ->orderBy(['Sort'=>SORT_ASC])
                     ->all();
             foreach ($children as $child){
@@ -743,6 +799,17 @@ class Options extends \yii\db\ActiveRecord
                 #}
             }
             return $items;
+        } catch (Exception $ex) {
+            throw $ex;
+        }
+    }
+    
+    public function getExtendedValues(){
+        try {
+            foreach ($this->optionenvironments as $opt){
+                array_push($this->_envoptions, [$opt->IdEnvironmentType => $opt->Enabled]);
+            }
+            return array_merge($this->attributes, ['Optionenvironment' => $this->_envoptions]);
         } catch (Exception $ex) {
             throw $ex;
         }

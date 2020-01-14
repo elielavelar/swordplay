@@ -3,7 +3,7 @@ namespace frontend\models;
 
 use yii\base\Model;
 use yii\base\InvalidParamException;
-use common\models\User;
+use frontend\models\Citizen;
 
 /**
  * Password reset form
@@ -13,7 +13,7 @@ class ResetPasswordForm extends Model
     public $password;
 
     /**
-     * @var \common\models\User
+     * @var Citizen
      */
     private $_user;
 
@@ -28,22 +28,22 @@ class ResetPasswordForm extends Model
     public function __construct($token, $config = [])
     {
         if (empty($token) || !is_string($token)) {
-            throw new InvalidParamException('Password reset token cannot be blank.');
+            throw new InvalidParamException('Token para Restablecer contraseña no puede quedar vacío.');
         }
-        $this->_user = User::findByPasswordResetToken($token);
+        $this->_user = Citizen::findByPasswordResetToken($token);
         if (!$this->_user) {
-            throw new InvalidParamException('Wrong password reset token.');
+            throw new InvalidParamException('Token para Restablecer Contraseña Erróneo.');
         }
         parent::__construct($config);
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function rules()
     {
         return [
-            ['password', 'required'],
+            ['password', 'required','message'=>'Campo {attribute} no puede quedar vacío'],
             ['password', 'string', 'min' => 6],
         ];
     }

@@ -5,14 +5,14 @@ namespace backend\models;
 use Yii;
 use common\models\User;
 use backend\models\Profileoptions;
-use common\models\Profiles;
+use common\models\Profile;
 
-use app\components\AuthorizationFunctions;
+use backend\components\AuthorizationFunctions;
 use yii\helpers\StringHelper;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
-
-use Exception;
+use common\models\Type;
+use common\models\State;
 
 /**
  * This is the model class for table "useroptions".
@@ -22,7 +22,7 @@ use Exception;
  * @property int $Enabled
  *
  * @property Options $option
- * @property Users $user
+ * @property User $user
  */
 class Useroptions extends \yii\db\ActiveRecord
 {
@@ -39,35 +39,34 @@ class Useroptions extends \yii\db\ActiveRecord
     
     public $_idParent;
     
+    function __construct($config = array()) {
+        $this->auth = new AuthorizationFunctions();
+        parent::__construct($config);
+    }
+    
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public static function tableName()
     {
         return 'useroptions';
     }
-    
-    function __construct($config = array()) {
-        $this->auth = new AuthorizationFunctions();
-        parent::__construct($config);
-    }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function rules()
     {
         return [
             [['IdUser', 'IdOption', 'Enabled'], 'required'],
             [['IdUser', 'IdOption', 'Enabled'], 'integer'],
-            [['IdUser', 'IdOption'], 'unique', 'targetAttribute' => ['IdUser', 'IdOption']],
             [['IdOption'], 'exist', 'skipOnError' => true, 'targetClass' => Options::className(), 'targetAttribute' => ['IdOption' => 'Id']],
-            [['IdUser'], 'exist', 'skipOnError' => true, 'targetClass' => Users::className(), 'targetAttribute' => ['IdUser' => 'Id']],
+            [['IdUser'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['IdUser' => 'Id']],
         ];
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function attributeLabels()
     {
@@ -91,10 +90,11 @@ class Useroptions extends \yii\db\ActiveRecord
      */
     public function getUser()
     {
-        return $this->hasOne(Users::className(), ['Id' => 'IdUser']);
+        return $this->hasOne(User::className(), ['Id' => 'IdUser']);
     }
     
-    public static function getHtmlList($criteria = NULL){
+    
+     public static function getHtmlList($criteria = NULL){
         try {
             self::$_idUser = isset($criteria['IdUser']) ? $criteria['IdUser']:NULL;
             unset($criteria['IdUser']);
@@ -190,6 +190,7 @@ class Useroptions extends \yii\db\ActiveRecord
         }
     }
     
+    
     private static function _iterateOptionChildren($options = [], $_user = [], $_profile = []){
         try {
             $_options = [];
@@ -197,7 +198,7 @@ class Useroptions extends \yii\db\ActiveRecord
                 if(isset($_user[$option['KeyWord']])){
                     $option['level'] = StringHelper::basename(User::className());
                 } else {
-                    $option['level'] = StringHelper::basename(Profiles::className());
+                    $option['level'] = StringHelper::basename(Profile::className());
                 }
                 if(!empty($option['children'])){
                     $children = self::_iterateOptionChildren($option['children'], $_user, $_profile);
@@ -225,13 +226,13 @@ class Useroptions extends \yii\db\ActiveRecord
             throw $ex;
         }
     }
-    
+
     private static function getHtmlChildren($option = [], $_user = [], $_profile = []){
         try {
             if(empty($option)){
                 return "";
             }
-            $code = isset($option['idType']) ? $option['idType']['Code']:  Options::TYPE_PERMISSION;
+            $code = isset($option['type']) ? $option['type']['Code']:  Options::TYPE_PERMISSION;
             $keyword = $option['KeyWord'];
             $enabled = isset($_user[$keyword]) ? $_user[$keyword]:(isset($_profile[$keyword]) ? $_profile[$keyword]:0);
             $profilevalue = isset($_profile[$keyword]) ? $_profile[$keyword]:0;
@@ -254,7 +255,7 @@ class Useroptions extends \yii\db\ActiveRecord
                         . $option['Name'];
                     $table .= "</td>";
                     $table .= "<td>"
-                            . (isset($option['IdType']) ? $option['idType']['Name']:'')
+                            . (isset($option['IdType']) ? $option['type']['Name']:'')
                             . "</td>";
                     $table .= "<td>"
                             . $option['Url']
@@ -268,7 +269,7 @@ class Useroptions extends \yii\db\ActiveRecord
                         . $option["Name"];
                     $table .= "</td>";
                     $table .= "<td>"
-                            . (isset($option['IdType']) ? $option['idType']['Name']:'')
+                            . (isset($option['IdType']) ? $option['type']['Name']:'')
                             . "</td>";
                     $table .= "<td>"
                             . $option['Url']
@@ -282,7 +283,7 @@ class Useroptions extends \yii\db\ActiveRecord
                         . $option["Name"];
                     $table .= "</td>";
                     $table .= "<td>"
-                            . (isset($option['IdType']) ? $option['idType']['Name']:'')
+                            . (isset($option['IdType']) ? $option['type']['Name']:'')
                             . "</td>";
                     $table .= "<td>"
                             . $option['Url']
@@ -349,15 +350,19 @@ class Useroptions extends \yii\db\ActiveRecord
         }
     }
     
+    
     public function afterSave($insert, $changedAttributes) {
+        #$this->_createByType();
         return parent::afterSave($insert, $changedAttributes);
     }
     
     public function beforeDelete() {
+        #$this->_model = self::findOne(['Id'=> $this->Id]);
         return parent::beforeDelete();
     }
 
     public function afterDelete() {
+        #$this->_revoke();
         return parent::afterDelete();
     }
     
@@ -380,7 +385,8 @@ class Useroptions extends \yii\db\ActiveRecord
             throw $ex;
         }
     }
-    
+
+
     private function _getUserChildren(){
         try {
             $this->useroptions = self::find()->where(['IdUser'=>  $this->IdUser])->all();
@@ -426,6 +432,7 @@ class Useroptions extends \yii\db\ActiveRecord
         }
     }
     
+    
     private function _addNewPermissions(){
         try {
             foreach ($this->permissions as $key => $value){
@@ -452,9 +459,60 @@ class Useroptions extends \yii\db\ActiveRecord
         }
     }
     
+    private function _createByType(){
+        try {
+            
+            $code = $this->IdOption ? ($this->option->IdType ? $this->option->type->Code:Options::TYPE_PERMISSION):Options::TYPE_PERMISSION;
+            switch ($code) {
+                case Options::TYPE_MODULE:
+                case Options::TYPE_CONTROLLER:
+                case Options::TYPE_ACTION:
+                case Options::TYPE_PERMISSION:
+                default:
+                    $this->_assignPermission();
+                    break;
+            }
+        } catch (Exception $ex) {
+            throw $ex;
+        }
+    }
+    
+    private function _assignPermission(){
+        try {
+            $this->auth->assignUserPermission($this->IdUser, $this->option->KeyWord);
+        } catch (Exception $ex) {
+            throw $ex;
+        }
+    }
+    
+    private function _revoke(){
+        try {
+            $code = $this->_model->IdOption ? ($this->_model->option->IdType ? $this->_model->option->type->Code:Options::TYPE_PERMISSION):Options::TYPE_PERMISSION;
+            switch ($code) {
+                case Options::TYPE_MODULE:
+                case Options::TYPE_CONTROLLER:
+                case Options::TYPE_ACTION:
+                case Options::TYPE_PERMISSION:
+                default:
+                    $this->_model->_revokePermission();
+                    break;
+            }
+        } catch (Exception $ex) {
+            throw $ex;
+        }
+    }
+    
+    private function _revokePermission(){
+        try {
+            $this->auth->revokeUserPermission($this->IdUser, $this->option->KeyWord);
+        } catch (Exception $ex) {
+            throw $ex;
+        }
+    }
+
     public function _getErrors($errors = NULL){
         try {
-            return StringHelper::basename(self::className()).': '.\Yii::$app->components->customFunctions->getErrors($errors);
+            return StringHelper::basename(self::className()).': '.\Yii::$app->customFunctions->getErrors($errors);
         } catch (Exception $ex) {
             throw $ex;
         }
@@ -468,6 +526,7 @@ class Useroptions extends \yii\db\ActiveRecord
             throw $ex;
         }
     }
+    
     
     public function _getParent(){
         try {
@@ -494,6 +553,7 @@ class Useroptions extends \yii\db\ActiveRecord
                 $item =[
                     'label'=> " ".$child->option->Name,
                     'icon'=> $child->option->Icon,
+                    #'active'=> TRUE,
                 ];
                 if($child->option->Url != NULL){
                     $url = '@web/'.$child->option->Url;
@@ -546,8 +606,19 @@ class Useroptions extends \yii\db\ActiveRecord
     
     private function getMenuItems($opt){
         try {
-            $children = self::find()->joinWith('option b',true)
-                    ->where(['IdUser'=>$opt->IdUser,'b.ItemMenu'=>TRUE,'b.IdParent'=>$opt->IdOption])
+            $children = self::find()
+                    ->joinWith('option b',true)
+                    ->innerJoin('optionenvironment c', 'c.IdOption = b.Id')
+                    ->innerJoin('type d', 'd.Id = c.IdEnvironmentType')
+                    ->innerJoin('state e', 'e.Id = d.IdState')
+                    ->where([
+                        'useroptions.IdUser'=>$opt->IdUser,'b.ItemMenu'=>TRUE,'b.IdParent'=>$opt->IdOption,
+                        'd.KeyWord' => StringHelper::basename(Optionenvironment::class),
+                        'd.Code' => Yii::$app->id,
+                        'c.Enabled' => Optionenvironment::ENABLED_VALUE,
+                        'e.KeyWord' => StringHelper::basename(Type::class),
+                        'e.Code' => Type::STATUS_ACTIVE,
+                    ])
                     ->orderBy(['b.Sort'=>SORT_ASC])
                     ->all();
             $items = [];
@@ -559,4 +630,5 @@ class Useroptions extends \yii\db\ActiveRecord
             throw $ex;
         }
     }
+    
 }

@@ -3,8 +3,8 @@
 /**
  * @package   yii2-krajee-base
  * @author    Kartik Visweswaran <kartikv2@gmail.com>
- * @copyright Copyright &copy; Kartik Visweswaran, Krajee.com, 2014 - 2018
- * @version   2.0.0
+ * @copyright Copyright &copy; Kartik Visweswaran, Krajee.com, 2014 - 2019
+ * @version   2.0.5
  */
 
 namespace kartik\base;
@@ -36,6 +36,7 @@ trait BootstrapTrait
         self::BS_PANEL_TITLE => ['panel-title', 'card-title'],
         self::BS_PANEL_BODY => ['panel-body', 'card-body'],
         self::BS_PANEL_FOOTER => ['panel-footer', 'card-footer'],
+        self::BS_PANEL_DEFAULT => ['panel-default', ''],
         self::BS_PANEL_PRIMARY => ['panel-primary', ['bg-primary', 'text-white']],
         self::BS_PANEL_SUCCESS => ['panel-success', ['bg-success', 'text-white']],
         self::BS_PANEL_INFO => ['panel-info', ['bg-info', 'text-white']],
@@ -97,11 +98,12 @@ trait BootstrapTrait
         self::BS_PULL_RIGHT => ['pull-right', 'float-right'],
         self::BS_PULL_LEFT => ['pull-left', 'float-left'],
         self::BS_CENTER_BLOCK => ['center-block', ['mx-auto', 'd-block']],
+        self::BS_HIDE => ['hide', 'd-none'],
         self::BS_HIDDEN_PRINT => ['hidden-print', 'd-print-none'],
-        self::BS_HIDDEN_XS => ['hidden-xs', 'd-none'],
-        self::BS_HIDDEN_SM => ['hidden-sm', 'd-sm-none'],
-        self::BS_HIDDEN_MD => ['hidden-md', 'd-md-none'],
-        self::BS_HIDDEN_LG => ['hidden-lg', 'd-lg-none'],
+        self::BS_HIDDEN_XS => ['hidden-xs', ['d-none', 'd-sm-block']],
+        self::BS_HIDDEN_SM => ['hidden-sm', ['d-sm-none', 'd-md-block']],
+        self::BS_HIDDEN_MD => ['hidden-md', ['d-md-none', 'd-lg-block']],
+        self::BS_HIDDEN_LG => ['hidden-lg', ['d-lg-none', 'd-xl-block']],
         self::BS_VISIBLE_PRINT => ['visible-print-block', ['d-print-block', 'd-none']],
         self::BS_VISIBLE_XS => ['visible-xs', ['d-block', 'd-sm-none']],
         self::BS_VISIBLE_SM => ['visible-sm', ['d-none', 'd-sm-block', 'd-md-none']],
@@ -285,6 +287,7 @@ trait BootstrapTrait
      * Adds bootstrap CSS class to options by parsing the bootstrap version for the specified Bootstrap CSS type
      * @param array $options the HTML attributes for the container element that will be modified
      * @param string $type the bootstrap CSS class type
+     * @return \kartik\base\Widget|mixed current object instance that uses this trait
      * @throws InvalidConfigException
      */
     public function addCssClass(&$options, $type)
@@ -293,12 +296,14 @@ trait BootstrapTrait
         if (!empty($css)) {
             Html::addCssClass($options, $css);
         }
+        return $this;
     }
 
     /**
      * Removes bootstrap CSS class from options by parsing the bootstrap version for the specified Bootstrap CSS type
      * @param array $options the HTML attributes for the container element that will be modified
      * @param string $type the bootstrap CSS class type
+     * @return \kartik\base\Widget|mixed current object instance that uses this trait
      * @throws InvalidConfigException
      */
     public function removeCssClass(&$options, $type)
@@ -307,6 +312,7 @@ trait BootstrapTrait
         if (!empty($css)) {
             Html::removeCssClass($options, $css);
         }
+        return $this;
     }
 
     /**

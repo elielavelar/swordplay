@@ -1,0 +1,91 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : Jun 23, 2017, 4:31:23 PM
+    Author     : Eliel Avelar <ElielAbisai.AvelarJaimes@muehlbauer.de>
+*/
+
+.appointments-form {
+    
+}
+.appointments-form div.panel-default {
+    padding: 2px 16px 8px 16px;
+    border: 1px solid #ddd;
+    border-radius: 14px;
+}
+
+.nav li > form > button.logout {
+    background-color: #00A5E6;
+    color: #fff;
+}
+
+.nav li > form > button.logout:hover {
+    background-color: #fff;
+    color: #00A5E6;
+}
+
+.nav li > a.logout {
+    background-color: #00A5E6;
+    color: #fff;
+}
+
+.nav li > a.logout:hover {
+    background-color: #fff;
+    color: #00A5E6;
+}
+
+
+div.kv-grid-container {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+div.kv-grid-container .empty {
+    padding-left: 15px;
+    line-height: 2;
+    vertical-align: middle;
+    margin-bottom: 0;
+}
+
+div.kv-grid-container table thead tr th:first-child, div.kv-grid-container table thead tr th:last-child {
+    border-left: none;
+}
+div.kv-grid-container table thead tr th {
+    border-left: 1px solid #ddd;
+}
+
+label.lbl-message {
+    font-size: 12px;
+    color: #71777E;
+}
+
+label.lbl-message a {
+    font-size: 12px;
+    color: #2AA198;
+}
+
+.candidate-selected {
+    background-color: #ffff94;
+}
+.candidate-selected .box > .box-body {
+    background-color: #ffff94;
+}
+
+.candidate-assigned .box {
+    background-color: #ccff00;
+}
+
+.candidate-assigned .box > .box-body {
+    background-color: #ccff00;
+}
+
+.profile-selected .box {
+    background-color: #ffff94;
+}
+
+.profile-assigned .box {
+    background-color: #ccff00;
+}

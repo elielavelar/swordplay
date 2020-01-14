@@ -62,6 +62,17 @@ if you run into problems loading dumps and cleaning databases.
              ssl_verify_server_cert: false
              ssl_cipher: 'AES256-SHA'
 
+## Example with multi-dumps
+    modules:
+         enabled:
+            - Db:
+               dsn: 'mysql:host=localhost;dbname=testdb'
+               user: 'root'
+               password: ''
+               dump:
+                  - 'tests/_data/dump.sql'
+                  - 'tests/_data/dump-2.sql'
+
 ## Example with multi-databases
 
     modules:
@@ -267,7 +278,6 @@ $mails = $I->grabFromDatabase('users', 'email', array('name' => 'RebOOter'));
  * `param string` $column
  * `param array`  $criteria
 
- * `return` array
 
 
 ### grabNumRecords
@@ -294,10 +304,6 @@ $I->haveInDatabase('users', array('name' => 'miles', 'email' => 'miles@davis.com
  * `param array` $data
 
  * `return integer` $id
-
-
-### isPopulated
-__not documented__
 
 
 ### performInDatabase
@@ -332,7 +338,7 @@ Actions executed from array or ActionSequence will print debug output for action
 exception on failure.
 
  * `param` $databaseKey
- * `param actions` $actions
+ * `param \Codeception\Util\ActionSequence|array|callable` $actions
 @throws ModuleConfigException
 
 

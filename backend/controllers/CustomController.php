@@ -12,7 +12,7 @@ use yii\web\ForbiddenHttpException;
 /**
  * Description of CustomController
  *
- * @author Eliel Avelar <elielavelar@gmail.com>
+ * @author Eliel Avelar <ElielAbisai.AvelarJaimes@muehlbauer.de>
  */
 class CustomController extends \yii\web\Controller {
     //put your code here

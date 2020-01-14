@@ -12,6 +12,14 @@ return [
         'gridview'=>[
             'class'=>'\kartik\grid\Module',
         ],
+        'backup' => [
+            'class' => 'backend\modules\admin\Backup',
+            'defaultRoute'=>'backup',
+            'params'=>[
+                'backupPath'=>'/web/_backup',
+                'backupUrl'=>'_backup',
+            ],
+        ],
     ],
     'components' => [
         'cache' => [

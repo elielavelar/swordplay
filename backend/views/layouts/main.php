@@ -6,7 +6,10 @@
 use omnilight\assets\SweetAlertAsset;
 use webtoolsnz\AdminLte\ThemeAsset;
 use backend\assets\AppAsset;
+#use app\assets\FontAwesomeAsset;
 
+#FontAwesomeAsset::register($this);
+#SweetAlertAsset::register($this);
 AppAsset::register($this);
 ThemeAsset::register($this);
 
@@ -21,7 +24,7 @@ $this->registerJsFile('@web/js/customscripts.js');
 
 <?= $this->render('//layouts/head') ?>
 
-<body class="hold-transition <?= $this->theme->customSkin ? $this->theme->customSkin : $this->theme->skin ?> <?= $this->theme->layout ?>">
+<body class="hold-transition <?= $this->theme->customSkin ? $this->theme->customSkin : $this->theme->skin ?> <?= $this->theme->layout ?> <?="sidebar-collapse"?>">
 <div class="wrapper">
 
     <!-- Header Begin -->

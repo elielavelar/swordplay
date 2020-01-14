@@ -2,6 +2,7 @@
 
 use Codeception\Step;
 use Codeception\Util\Stub;
+use Facebook\WebDriver\Cookie;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\WebDriverBy;
@@ -554,7 +555,7 @@ class WebDriverTest extends TestsForBrowsers
 
     public function testWebDriverWaits()
     {
-        $fakeWd = Stub::make(self::WEBDRIVER_CLASS, ['wait' => Stub::exactly(12, function () {
+        $fakeWd = Stub::make(self::WEBDRIVER_CLASS, ['wait' => Stub::exactly(16, function () {
             return new \Codeception\Util\Maybe();
         })]);
         $module = Stub::make(self::MODULE_CLASS, ['webDriver' => $fakeWd]);
@@ -572,6 +573,11 @@ class WebDriverTest extends TestsForBrowsers
         $module->waitForElementNotVisible(['id' => 'user']);
         $module->waitForElementNotVisible(['css' => '.user']);
         $module->waitForElementNotVisible('//xpath');
+
+        $module->waitForElementClickable(WebDriverBy::partialLinkText('yeah'));
+        $module->waitForElementClickable(['id' => 'user']);
+        $module->waitForElementClickable(['css' => '.user']);
+        $module->waitForElementClickable('//xpath');
     }
 
     public function testWaitForElement()
@@ -680,7 +686,7 @@ class WebDriverTest extends TestsForBrowsers
                         'value' => '_value_',
                         'path' => '/',
                         'domain' => '.3rd-party.net',
-                    ]
+                    ],
                 ];
             }),
         ]);

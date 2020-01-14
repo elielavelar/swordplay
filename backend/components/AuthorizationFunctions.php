@@ -1,6 +1,6 @@
 <?php
 
-namespace app\components;
+namespace backend\components;
 
 use Yii;
 use yii\base\Component;
@@ -8,7 +8,7 @@ use yii\base\Component;
 /**
  * Description of AuthorizationFunctions
  *
- * @author Eliel Avelar <elielavelar@gmail.com>
+ * @author Eliel Avelar <ElielAbisai.AvelarJaimes@muehlbauer.de>
  */
 class AuthorizationFunctions extends Component {
     private $auth;
@@ -239,8 +239,6 @@ class AuthorizationFunctions extends Component {
     
     public function updatePermission($name, $option){
         try {
-//            $option = $this->getPermission($name);
-//            $option->name = $newname;
             return $this->auth->update($name, $option);
             
         } catch (Exception $ex) {

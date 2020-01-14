@@ -4,17 +4,17 @@ use yii\helpers\Html;
 use kartik\password\PasswordInput;
 use kartik\widgets\Select2;
 use yii\helpers\ArrayHelper;
-use common\models\Profiles;
-use common\models\States;
-#use common\models\Servicecentres;
+use common\models\Profile;
+use common\models\State;
+use common\models\Servicecentres;
 use yii\web\JsExpression;
 
 /* @var $this yii\web\View */
 /* @var $model common\models\User */
 /* @var $form yii\widgets\ActiveForm */
-$options = [];
+$options = ['autocomplete' => 'off'];
 if(!$model->isNewRecord){
-    $options['readonly']=TRUE;
+    $options['readonly']='readonly';
 }
 
 $url = \Yii::$app->getUrlManager()->createUrl('user');
@@ -30,7 +30,6 @@ $verdictTitles = [
     5 => 'Excelente'
 ];
 ?>
-
 <div class="panel-body">
     <div class="row">
         <div class="col-md-6">
@@ -39,33 +38,54 @@ $verdictTitles = [
     </div>
     <div class="row">
         <div class="col-md-6">
-            <?= $form->field($model, 'FirstName')->textInput([]) ?>
+            <?= $form->field($model, 'FirstName')->textInput(['autocomplete'=>'off']) ?>
         </div>
         <div class="col-md-6">
-            <?= $form->field($model, 'SecondName')->textInput([]) ?>
+            <?= $form->field($model, 'SecondName')->textInput(['autocomplete'=>'off']) ?>
         </div>
     </div>
     <div class="row">
         <div class="col-md-6">
-            <?= $form->field($model, 'LastName')->textInput([]) ?>
+            <?= $form->field($model, 'LastName')->textInput(['autocomplete'=>'off']) ?>
         </div>
         <div class="col-md-6">
-            <?= $form->field($model, 'SecondLastName')->textInput([]) ?>
+            <?= $form->field($model, 'SecondLastName')->textInput(['autocomplete'=>'off']) ?>
         </div>
     </div>
     <div class="row">
         <div class="col-md-6">
-            <?=$form->field($model, 'Email')->textInput()?>
+            <?= $form->field($model, 'DisplayName')->textInput(['autocomplete'=>'off']) ?>
+        </div>
+        <div class="col-md-6">
+            <?=$form->field($model, 'Email')->textInput(['autocomplete'=>'off'])?>
         </div>
     </div>
     <div class="row">
+        
+        <div class="col-md-6">
+            <?= $form->field($model, 'IdServiceCentre')->widget(Select2::className(),[
+                            'data'=>$model->getServicecentres(),
+                            #'disabled'=> (!$model->isNewRecord),
+                            'initValueText'=> ($model->IdServiceCentre ? $model->serviceCentre->Name:""),
+                            'options' => ['placeholder' => '--Seleccione Departamento--'],
+                            'size'=> Select2::SIZE_MEDIUM,
+                            'pluginOptions'=> [
+                                'allowClear' => true,
+                            ],
+                        'pluginEvents'=> [
+                            'change'=> "function(){ }",
+                        ],
+                ]);
+            ?>
+            
+        </div>
         <div class="col-md-6">
             <?= $form->field($model, 'IdProfile')->widget(Select2::className(),[
                             'data'=>$model->getProfiles(),
-                            'disabled'=> (!$model->isNewRecord),
+                            #'disabled'=> (!$model->isNewRecord),
                             'initValueText'=> ($model->IdProfile ? $model->profile->Name:""),
                             'options' => ['placeholder' => '--Seleccione Perfil--'],
-                            'size'=>'lg',
+                            'size'=> Select2::SIZE_MEDIUM,
                             'pluginOptions'=> [
                                 'allowClear' => true,
                             ],
@@ -78,6 +98,9 @@ $verdictTitles = [
     </div>
     <div class="row">
         <div class="col-md-4">
+            <?=$form->field($model, 'CodEmployee')->textInput(['autocomplete'=>'off'])?>
+        </div>
+        <div class="col-md-4">
             <?= $form->field($model, 'IdState')->dropDownList($model->getStates(), []); ?>
         </div>
         <div class="col-md-4">
@@ -87,7 +110,7 @@ $verdictTitles = [
     <div class="row">
         <div class="col-md-3">
             <div class="form-group">
-                <label class="control-label" for="btn-getRandomPass" style="display: block">.</label>
+                <label class="control-label" for="btn-getRandomPass" style="display: block">&nbsp;</label>
                 <?= Html::button('<i class="glyphicon glyphicon-refresh"></i> Generar Contrase&ntilde;a', ['class'=>'btn control-input','id'=>'btn-getRandomPass'])?>
             </div>
         </div>
@@ -113,6 +136,19 @@ $verdictTitles = [
 </div>
 
 <?php 
+$valid = <<< JS
+        $("#user-firstname, #user-lastname").on('change', function(){
+            var _enabled = $('#user-username').not(['readonly']);
+            var _fname = jQuery.trim($("#user-firstname").val());
+            var _arrayName = _fname.split('');
+            var _lname = jQuery.trim($("#user-lastname").val());
+            var _username = _lname.toUpperCase() + (_arrayName.length > 0 ? _arrayName[0]:'').toUpperCase();
+            var _display =  _fname.toUpperCase()+ ' ' + _lname.toUpperCase();
+            $("#user-username").val(_username);
+            $("#user-displayname").val(jQuery.trim(_display));
+        });
+JS;
+$validation = $model->isNewRecord ? $valid:'';
 $script = <<< JS
     var getRandomPass = function(){
         var params = {};
@@ -137,6 +173,8 @@ $script = <<< JS
         $('#btn-getRandomPass').on('click',function(){
             getRandomPass();
         });
+        
+        $validation
     });
 JS;
 $this->registerJs($script, yii\web\View::POS_READY);

@@ -10,11 +10,12 @@ namespace app\components;
 use yii\base\Component;
 use Exception;
 use yii\db\Query;
+use Yii;
 
 /**
  * Description of CustomFunctions
  *
- * @author Eliel Avelar <elielavelar@gmail.com>
+ * @author Eliel Avelar <ElielAbisai.AvelarJaimes@muehlbauer.de>
  */
 class CustomFunctions extends Component {
     //put your code here
@@ -213,7 +214,7 @@ class CustomFunctions extends Component {
                 $custom = FALSE;
                 $user = \Yii::$app->user->getIdentity();
                 $option = \backend\models\Useroptions::find()
-                        ->joinWith('idOption b')
+                        ->joinWith('option b')
                         ->where(['b.KeyWord'=> $permissionName])
                         ->andWhere(['useroptions.IdUser'=> $user->Id])
                         ->one();
@@ -226,9 +227,43 @@ class CustomFunctions extends Component {
                 if($custom){
                     $can = $useroption == 1;
                 } else {
-                    $can = \Yii::$app->user->can($permissionName);;
+                    $can = \Yii::$app->user->can($permissionName);
                 }
                 return $can;
+            } catch (Exception $ex) {
+                throw $ex;
+            }
+        }
+        
+        public static function getAttributeChanges($oldAttributes = [], $newAttributes = []){
+            try {
+                $diff = [];
+                foreach ($oldAttributes as $key => $value){
+                    if($newAttributes[$key] != $value){
+                        $diff[$key] = $newAttributes[$key];
+                    }
+                }
+                return $diff;
+            } catch (Exception $ex) {
+                throw $ex;
+            }
+        }
+        
+        public static function getAttributeDiff($oldAttributes = [], $newAttributes = []){
+            try {
+                $diff = [];
+                if(!empty($oldAttributes)){
+                    foreach ($oldAttributes as $key => $value){
+                        if($newAttributes[$key] != $value){
+                            $diff[$key] = ['VALUE'=> $newAttributes[$key],'OLDVALUE' => $value];
+                        }
+                    }
+                } else {
+                    foreach ($newAttributes as $key => $value){
+                        $diff[$key] = ['VALUE' => $value,'OLDVALUE' => NULL];
+                    }
+                }
+                return $diff;
             } catch (Exception $ex) {
                 throw $ex;
             }

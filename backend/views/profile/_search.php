@@ -4,11 +4,11 @@ use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 
 /* @var $this yii\web\View */
-/* @var $model backend\models\ProfilesSearch */
+/* @var $model backend\models\ProfileSearch */
 /* @var $form yii\widgets\ActiveForm */
 ?>
 
-<div class="profiles-search">
+<div class="profile-search">
 
     <?php $form = ActiveForm::begin([
         'action' => ['index'],
@@ -19,11 +19,9 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'Name') ?>
 
-    <?= $form->field($model, 'KeyWord') ?>
+    <?= $form->field($model, 'Description') ?>
 
     <?= $form->field($model, 'IdState') ?>
-
-    <?= $form->field($model, 'Description') ?>
 
     <div class="form-group">
         <?= Html::submitButton('Search', ['class' => 'btn btn-primary']) ?>

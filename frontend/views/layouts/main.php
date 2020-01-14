@@ -1,83 +1,56 @@
 <?php
+/**
+ * @var $this \yii\web\View
+ * @var $content string
+ */
+use omnilight\assets\SweetAlertAsset;
+use webtoolsnz\AdminLte\ThemeAsset;
+use backend\assets\AppAsset;
+#use app\assets\FontAwesomeAsset;
 
-/* @var $this \yii\web\View */
-/* @var $content string */
-
-use yii\helpers\Html;
-use yii\bootstrap\Nav;
-use yii\bootstrap\NavBar;
-use yii\widgets\Breadcrumbs;
-use frontend\assets\AppAsset;
-use common\widgets\Alert;
-
+#FontAwesomeAsset::register($this);
+#SweetAlertAsset::register($this);
 AppAsset::register($this);
+ThemeAsset::register($this);
+
+$this->registerJsFile('@web/js/customscripts.js');
+#$this->registerCssFile('@web/css/custom.css');
+
 ?>
+
 <?php $this->beginPage() ?>
 <!DOCTYPE html>
 <html lang="<?= Yii::$app->language ?>">
-<head>
-    <meta charset="<?= Yii::$app->charset ?>">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <?= Html::csrfMetaTags() ?>
-    <title><?= Html::encode($this->title) ?></title>
-    <?php $this->head() ?>
-</head>
-<body>
-<?php $this->beginBody() ?>
 
-<div class="wrap">
-    <?php
-    NavBar::begin([
-        'brandLabel' => Yii::$app->name,
-        'brandUrl' => Yii::$app->homeUrl,
-        'options' => [
-            'class' => 'navbar-inverse navbar-fixed-top',
-        ],
-    ]);
-    $menuItems = [
-        ['label' => 'Home', 'url' => ['/site/index']],
-        ['label' => 'About', 'url' => ['/site/about']],
-        ['label' => 'Contact', 'url' => ['/site/contact']],
-    ];
-    if (Yii::$app->user->isGuest) {
-        $menuItems[] = ['label' => 'Signup', 'url' => ['/site/signup']];
-        $menuItems[] = ['label' => 'Login', 'url' => ['/site/login']];
-    } else {
-        $menuItems[] = '<li>'
-            . Html::beginForm(['/site/logout'], 'post')
-            . Html::submitButton(
-                'Logout (' . Yii::$app->user->identity->username . ')',
-                ['class' => 'btn btn-link logout']
-            )
-            . Html::endForm()
-            . '</li>';
-    }
-    echo Nav::widget([
-        'options' => ['class' => 'navbar-nav navbar-right'],
-        'items' => $menuItems,
-    ]);
-    NavBar::end();
-    ?>
+<?= $this->render('//layouts/head') ?>
 
-    <div class="container">
-        <?= Breadcrumbs::widget([
-            'links' => isset($this->params['breadcrumbs']) ? $this->params['breadcrumbs'] : [],
-        ]) ?>
-        <?= Alert::widget() ?>
-        <?= $content ?>
+<body class="hold-transition <?= $this->theme->customSkin ? $this->theme->customSkin : $this->theme->skin ?> <?= $this->theme->layout ?> <?="sidebar-collapse"?>">
+<div class="wrapper">
+
+    <!-- Header Begin -->
+    <?= $this->render('//layouts/header') ?>
+    <!-- Header Begin -->
+
+    <!-- Sidebar Begin -->
+    <?= $this->render('//layouts/sidebar') ?>
+    <!-- Sidebar End -->
+
+    <?php $this->beginBody() ?>
+    <div class="content-wrapper">
+        <!-- Content Header Begin -->
+        <?= $this->render('//layouts/content-header') ?>
+        <!-- Content Header End -->
+
+        <!-- Content Begin -->
+        <?= $this->render('//layouts/content', ['content' => $content]) ?>
+        <!-- Content End -->
     </div>
+    <?php $this->endBody() ?>
+
+    <!-- Footer Begin -->
+    <?= $this->render('//layouts/footer') ?>
+    <!-- Footer End -->
 </div>
-
-<footer class="footer">
-    <div class="container">
-        <p class="pull-left">&copy; <?= Html::encode(Yii::$app->name) ?> <?= date('Y') ?></p>
-
-        <p class="pull-right"><?= Yii::powered() ?></p>
-    </div>
-</footer>
-
-<?php $this->endBody() ?>
 </body>
 </html>
 <?php $this->endPage() ?>

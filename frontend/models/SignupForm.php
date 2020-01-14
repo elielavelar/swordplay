@@ -2,37 +2,53 @@
 namespace frontend\models;
 
 use yii\base\Model;
-use common\models\User;
+use frontend\models\Citizen;
 
 /**
  * Signup form
  */
 class SignupForm extends Model
 {
-    public $username;
+    public $name;
+    public $lastname;
     public $email;
     public $password;
+    public $passwordconfirm;
 
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function rules()
     {
         return [
-            ['username', 'trim'],
-            ['username', 'required'],
-            ['username', 'unique', 'targetClass' => '\common\models\User', 'message' => 'This username has already been taken.'],
-            ['username', 'string', 'min' => 2, 'max' => 255],
-
+            ['name', 'trim'],
+            [['name','lastname','email','password','passwordconfirm'], 'required','message'=>'{attribute} no puede quedar vacío'],
+            ['name', 'string', 'min' => 2, 'max' => 255],
+            
+            ['lastname', 'trim'],
+            ['lastname', 'string', 'min' => 2, 'max' => 255],
+            
             ['email', 'trim'],
-            ['email', 'required'],
             ['email', 'email'],
             ['email', 'string', 'max' => 255],
-            ['email', 'unique', 'targetClass' => '\common\models\User', 'message' => 'This email address has already been taken.'],
+            ['email', 'unique', 'targetClass' => '\frontend\models\Citizen','targetAttribute' => 'Email', 'message' => 'Email ya  existe.'],
 
-            ['password', 'required'],
             ['password', 'string', 'min' => 6],
+            
+            ['passwordconfirm', 'string', 'min' => 6],
+            ['passwordconfirm', 'compare', 'compareAttribute'=>'password', 'message'=>"Contraseñas no coinciden" ],
+        ];
+    }
+    
+     public function attributeLabels()
+    {
+        return [
+            'name' => 'Nombres',
+            'lastname' => 'Apellidos',
+            'email' => 'Correo electrónico',
+            'password' => 'Contraseña',
+            'passwordconfirm' => 'Confirmar Contraseña',
         ];
     }
 
@@ -47,12 +63,21 @@ class SignupForm extends Model
             return null;
         }
         
-        $user = new User();
-        $user->username = $this->username;
-        $user->email = $this->email;
+        $user = new Citizen();
+        $user->scenario = Citizen::SCENARIO_SIGNUP;
+        $user->Name = $this->name;
+        $user->LastName = $this->lastname;
+        $user->Email = $this->email;
         $user->setPassword($this->password);
         $user->generateAuthKey();
         
-        return $user->save() ? $user : null;
+        if($user->save()){
+            return $user;
+        } else {
+            print_r($user->attributes);
+            echo "<br>";
+            print_r($user->errors);
+            return NULL;
+        }
     }
 }

@@ -4,19 +4,20 @@ namespace common\models;
 use Yii;
 use yii\base\NotSupportedException;
 use yii\behaviors\TimestampBehavior;
+use yii\db\Expression;
 use yii\db\ActiveRecord;
 use yii\web\IdentityInterface;
-use yii\db\Expression;
-use common\models\States;
-use common\models\Profiles;
+use common\models\State;
+use common\models\Profile;
 use backend\models\Profileoptions;
 use yii\helpers\ArrayHelper;
 use yii\helpers\StringHelper;
-use app\components\AuthorizationFunctions;
+use backend\components\AuthorizationFunctions;
 use kartik\password\StrengthValidator;
 use backend\models\Settingsdetail;
 use backend\models\Settings;
 use backend\models\Useroptions;
+use common\models\Userpreferences;
 
 /**
  * User model
@@ -27,31 +28,37 @@ use backend\models\Useroptions;
  * @property string $SecondName
  * @property string $LastName
  * @property string $SecondLastName
+ * @property string $DisplayName
  * @property string $PasswordHash
  * @property string $PasswordResetToken
  * @property string $Email
  * @property string $AuthKey
+ * @property string $CreateDate
+ * @property string $UpdateDate
+ * @property string $PasswordExpirationDate
  * @property integer $IdState
  * @property integer $IdProfile
- * @property string $CreatedDate
- * @property string $UpdatedDate
- * @property string $PasswordExpirationDate
+ * @property string $CodEmployee
+ * @property integer $IdServiceCentre
  * @property string $password write-only password
  * 
- * @property States $state
- * @property Profiles $profile
+ * @property State $state
+ * @property Profile $profile
+ * @property Servicecentres $serviceCentre
+ * @property Options[] $options
  * @property Useroptions[] $useroptions;
+ * @property Userpreferences[] $userpreferences
+ * @property Settingsdetail[] $settingDetails
+ * 
  */
 class User extends ActiveRecord implements IdentityInterface
 {
-    const STATE_ACTIVE = 'ACT';
-    const STATE_INACTIVE = 'INA';
+    public $profileName;
+    public $completeName;
+    public $serviceCentreName;
+    public $stateName;
+    public $settings = [];
 
-    public $_password = NULL;
-    public $_passwordconfirm = NULL;
-    public $completeName = NULL;
-    public $stateName = NULL;
-    public $profileName = NULL;
     private $_customPassword = FALSE;
     private $_new = FALSE;
     
@@ -64,38 +71,49 @@ class User extends ActiveRecord implements IdentityInterface
     
     private $_role = NULL;
     
+    public $_password = NULL;
+    public $_passwordconfirm = NULL;
+    
     public $menuItems = [];
     public $usersetting = NULL;
     public $_emptyUserOptions = FALSE;
+
+    const STATUS_DELETED = 0;
+    const STATUS_ACTIVE = 10;
+
+    const STATE_ACTIVE = 'ACT';
+    const STATE_INACTIVE = 'INA';
     
     const DEFAULT_PROFILE = 'USER';
     const SCENARIO_CREATE = 'create';
     const SCENARIO_CONSOLE = 'console';
     const SCENARIO_LOGIN = 'login';
     const SCENARIO_DETAIL = 'detail';
+    const SCENARIO_WEBSERVICE = 'webservice';
     
     const CLASS_USER_BACKEND = 'User';
-    const CLASS_USER_FRONTEND = 'User';
+    const CLASS_USER_FRONTEND = 'Citizen';
     
     const PASSWORD_EXPIRATION_PARAMETER = 'PASSEXP';
     const PASSWORD_EXPIRATION_WARNING_PARAMETER = 'WRNPASS';
+    
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public static function tableName()
     {
-        return '{{%users}}';
+        return '{{%user}}';
     }
     
     public function scenarios() {
         $scenarios = parent::scenarios();
-        $scenarios[self::SCENARIO_CREATE] = ['Id','Username','FirstName','SecondName','LastName','SecondLastName'
+        $scenarios[self::SCENARIO_CREATE] = ['Id','Username','FirstName','SecondName','LastName','SecondLastName','DisplayName'
             ,'Email','_password','_passwordconfirm','IdProfile','profileName'
-            #,'IdServiceCentre'
-            ,'IdState'
+            ,'IdServiceCentre','IdState','CodEmployee'
         ];
         $scenarios[self::SCENARIO_LOGIN] = ['Username','_password','IdState','PasswordExpirationDate'];
+        $scenarios[self::SCENARIO_WEBSERVICE] = ['Username','_password','AuthKey','IdState','PasswordExpirationDate'];
         return $scenarios;
     }
     
@@ -118,8 +136,8 @@ class User extends ActiveRecord implements IdentityInterface
             'timestamp' => [
                 'class' => TimestampBehavior::className(),
                 'attributes' => [
-                    ActiveRecord::EVENT_BEFORE_INSERT => ['CreatedDate'],
-                    ActiveRecord::EVENT_BEFORE_UPDATE => ['UpdatedDate'],
+                    ActiveRecord::EVENT_BEFORE_INSERT => ['CreateDate'],
+                    ActiveRecord::EVENT_BEFORE_UPDATE => ['UpdateDate'],
                 ],
                 'value'=>new Expression('NOW()'),
             ],
@@ -127,21 +145,31 @@ class User extends ActiveRecord implements IdentityInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function rules()
     {
         return [
-            [['Username','Email','IdState','IdProfile','FirstName','LastName'],'required','message'=>'Campo {attribute} no puede quedar vacío'],
+            [['FirstName','LastName','IdState','IdProfile','Username','Email','IdServiceCentre','DisplayName'],'required','message'=>'Campo {attribute} no puede quedar vacío'],
             [['IdState','IdProfile'],'integer'],
             [['Email'],'email'],
+            [['_password','_passwordconfirm'],'required','on'=>['create']],
+            [['Username'],'unique','message'=>'{attribute} {value} ya existe'],
+            [['CreateDate', 'UpdateDate','PasswordExpirationDate'], 'safe'],
+            [['IdState'], 'default','value'=>  State::findOne(['KeyWord'=>'User','Code'=>  self::STATE_ACTIVE])->Id],
+            [['IdProfile'], 'default','value'=> Profile::findOne(['Code'=>  self::DEFAULT_PROFILE])->Id],
+            [['Username','FirstName','LastName', 'IdState'], 'required','message'=>'{attribute} no puede quedar vacío'],
+            [['IdState'], 'exist', 'skipOnError' => true, 'targetClass' => State::className(), 'targetAttribute' => ['IdState' => 'Id']],
+            [['IdProfile'], 'exist', 'skipOnError' => true, 'targetClass' => Profile::className(), 'targetAttribute' => ['IdProfile' => 'Id']],
+            [['IdServiceCentre'], 'exist', 'skipOnError' => true, 'targetClass' => Servicecentres::className(), 'targetAttribute' => ['IdServiceCentre' => 'Id']],
+            ['_password', 'string', 'min' => 8],
+            ['Username', 'string', 'min' => 4],
+            [['Username','DisplayName'], 'string', 'max' => 50],
             ['AuthKey', 'string'],
-            [['FirstName','SecondName'],'string','max'=>30],
-            [['LastName','SecondLastName'],'string','max'=>50],
-            [['IdState'], 'exist', 'skipOnError' => true, 'targetClass' => States::className(), 'targetAttribute' => ['IdState' => 'Id']],
-            [['IdState'], 'default','value'=>  States::findOne(['KeyWord'=>'User','Code'=>  self::STATE_ACTIVE])->Id],
-            [['IdProfile'], 'exist', 'skipOnError' => true, 'targetClass' => Profiles::className(), 'targetAttribute' => ['IdProfile' => 'Id']],
-            [['IdProfile'], 'default','value'=> Profiles::findOne(['Code'=>  self::DEFAULT_PROFILE])->Id],
+            [['CodEmployee'], 'string', 'max' => 10],
+            [['Username'], 'unique'],
+            [['CodEmployee'], 'unique'],
+            [['FirstName','SecondName','LastName','SecondLastName'], 'string','max'=>50],
             ['_passwordconfirm', 'string', 'min' => 8],
             ['_password', StrengthValidator::className(),'preset'=>'normal','userAttribute'=>'Username'],
             ['_passwordconfirm', 'compare', 'compareAttribute'=>'_password', 'message'=>"Contraseñas no coinciden" ],
@@ -161,17 +189,19 @@ class User extends ActiveRecord implements IdentityInterface
             'LastName' => 'Primer Apellido',
             'SecondLastName' => 'Segundo Apellido',
             'completeName' => 'Nombre',
+            'DisplayName' => 'Nombre para Mostrar',
             'IdState' => 'Estado',
             'stateName' => 'Estado',
             'IdProfile' => 'Perfil',
             'profileName' => 'Perfil',
-            #'IdServiceCentre' => 'Departamento',
-            #'serviceCentreName' => 'Departamento',
+            'CodEmployee' => 'Código Empleado',
+            'IdServiceCentre' => 'Departamento',
+            'serviceCentreName' => 'Departamento',
             'AuthKey' => 'Llave',
             'Email' => 'Email',
             'PasswordHash' => 'Contraseña',
-            'CreatedDate' => 'Fecha Creación',
-            'UpdatedDate' => 'Fecha Actualización',
+            'CreateDate' => 'Fecha Creación',
+            'UpdateDate' => 'Fecha Actualización',
             '_password' => 'Contraseña',
             '_passwordconfirm' => 'Confirmar Contraseña',
             'PasswordExpirationDate'=>'Fecha Expiración Contraseña',
@@ -183,16 +213,23 @@ class User extends ActiveRecord implements IdentityInterface
      */
     public static function findIdentity($id)
     {
-        return static::findOne(['Id' => $id, 'IdState' => States::findOne(['KeyWord'=>'User','Code'=>self::STATE_ACTIVE])->Id]);
+        return static::findOne(['Id' => $id, 'IdState' => State::findOne(['KeyWord'=>'User','Code'=>self::STATE_ACTIVE])->Id]);
         #return static::findOne(['id' => $id, 'status' => self::STATUS_ACTIVE]);
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public static function findIdentityByAccessToken($token, $type = null)
     {
         throw new NotSupportedException('"findIdentityByAccessToken" is not implemented.');
+    }
+    
+    /**
+     * @inheritdoc
+     */
+    public static function findIdentityByAuthKey($auth_key){
+        return static::findOne(['AuthKey'=>$auth_key]);
     }
 
     /**
@@ -203,9 +240,117 @@ class User extends ActiveRecord implements IdentityInterface
      */
     public static function findByUsername($username)
     {
-        return static::findOne(['Username' => $username, 'IdState' => States::findOne(['KeyWord'=>'User','Code'=>self::STATE_ACTIVE])->Id]);
+        return static::findOne(['Username' => $username, 'IdState' => State::findOne(['KeyWord'=>'User','Code'=>self::STATE_ACTIVE])->Id]);
+    }
+    
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getState()
+    {
+        return $this->hasOne(State::className(), ['Id' => 'IdState']);
+    }
+    
+    public function getStates(){
+        try {
+            $droptions = State::findAll(['KeyWord'=>'User']);
+            return ArrayHelper::map($droptions, 'Id', 'Name');
+        } catch (Exception $ex) {
+            throw $ex;
+        }
+    }
+    
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getServiceCentre()
+    {
+        return $this->hasOne(Servicecentres::className(), ['Id' => 'IdServiceCentre']);
+    }
+    
+    public function getServiceCentres(){
+        try {
+            $droptions = Servicecentres::find()
+                ->select(["servicecentres.Id","servicecentres.Name","servicecentres.IdState","servicecentres.Id"])
+                ->innerJoinWith('state b')
+                ->where(['b.Code'=> Servicecentres::STATE_ACTIVE])
+                ->orderBy(['servicecentres.Id'=>'ASC'])
+                ->all();
+            return ArrayHelper::map($droptions, 'Id', 'Name');
+        } catch (Exception $ex) {
+            throw $ex;
+        }
+    }
+    
+    /**
+    * @return \yii\db\ActiveQuery
+    */
+   public function getUseroptions()
+   {
+       return $this->hasMany(Useroptions::className(), ['IdUser' => 'Id']);
+   }
+    
+    /**
+    * @return \yii\db\ActiveQuery
+    */
+   public function getUserpreferences()
+   {
+       return $this->hasMany(Userpreferences::className(), ['IdUser' => 'Id']);
+   }
+   
+   /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getOptions()
+    {
+        return $this->hasMany(Options::className(), ['Id' => 'IdOption'])->viaTable('useroptions', ['IdUser' => 'Id']);
+    }
+    
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getSettingDetails()
+    {
+        return $this->hasMany(Settingsdetail::className(), ['Id' => 'IdSettingDetail'])->viaTable('userpreferences', ['IdUser' => 'Id']);
+    }
+    
+    public function getSettings(){
+        try {
+            $this->settings = Settingsdetail::find()
+                                ->joinWith('setting b')
+                                ->joinWith('state c')
+                                ->where(['b.KeyWord' => StringHelper::basename(Userpreferences::class), 'c.Code' => Settingsdetail::STATUS_ACTIVE])
+                                ->all();
+        } catch (Exception $ex) {
+            throw $ex;
+        }
     }
 
+
+    
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getProfile()
+    {
+        return $this->hasOne(Profile::className(), ['Id' => 'IdProfile']);
+    }
+
+    
+    public function getProfiles(){
+        try {
+            $droptions = Profile::find()
+                ->select(["profile.Id","profile.Name","profile.IdState"])
+                ->innerJoinWith('state b')
+                ->where(['b.Code'=> Profile::STATE_ACTIVE])
+                ->orderBy(['profile.Id'=>'ASC'])
+                ->all();
+            return ArrayHelper::map($droptions, 'Id', 'Name');
+        } catch (Exception $ex) {
+            throw $ex;
+        }
+    }
+    
     /**
      * Finds user by password reset token
      *
@@ -220,7 +365,8 @@ class User extends ActiveRecord implements IdentityInterface
 
         return static::findOne([
             'PasswordResetToken' => $token,
-            'IdState' => States::findOne(['KeyWord'=>'User','Code'=>self::STATE_ACTIVE])->Id
+            'Idstate' => State::findOne(['KeyWord'=>'User','Code'=>self::STATE_ACTIVE])->Id
+            #'status' => self::STATUS_ACTIVE,
         ]);
     }
 
@@ -242,7 +388,7 @@ class User extends ActiveRecord implements IdentityInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getId()
     {
@@ -250,7 +396,7 @@ class User extends ActiveRecord implements IdentityInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getAuthKey()
     {
@@ -258,7 +404,7 @@ class User extends ActiveRecord implements IdentityInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function validateAuthKey($authKey)
     {
@@ -310,81 +456,21 @@ class User extends ActiveRecord implements IdentityInterface
         $this->PasswordResetToken = null;
     }
     
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getState()
-    {
-        return $this->hasOne(States::className(), ['Id' => 'IdState']);
-    }
-    
-    public function getStates(){
-        try {
-            $droptions = States::findAll(['KeyWord'=>'User']);
-            return ArrayHelper::map($droptions, 'Id', 'Name');
-        } catch (Exception $ex) {
-            throw $ex;
-        }
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getProfile()
-    {
-        return $this->hasOne(Profiles::className(), ['Id' => 'IdProfile']);
-    }
-    
-    public function getProfiles(){
-        try {
-            $droptions = Profiles::find()
-                ->select(["profiles.Id","profiles.Name","profiles.IdState"])
-                ->innerJoinWith('state b')
-                ->where(['b.Code'=> Profiles::STATE_ACTIVE])
-                ->orderBy(['profiles.Id'=>'ASC'])
-                ->all();
-            return ArrayHelper::map($droptions, 'Id', 'Name');
-        } catch (Exception $ex) {
-            throw $ex;
-        }
-    }
-    
     public function beforeSave($insert) {
         $this->FirstName = strtoupper($this->FirstName);
         $this->SecondName = strtoupper($this->SecondName);
         $this->LastName = strtoupper($this->LastName);
         $this->SecondLastName = strtoupper($this->SecondLastName);
         $this->Username = strtoupper($this->Username);
-
-        if($this->_password){
-            $this->setPassword($this->_password);
-            $this->_customPassword = TRUE;
-            $this->_new = $this->isNewRecord;
-
-            $user = \Yii::$app->user->getIdentity();
-            if($this->isNewRecord || $this->Username != $user->Username){
-                $date = date_sub(date_create(date('Y-m-d')), date_interval_create_from_date_string("1 day"));
-            } else {
-                $daysSetting = Settingsdetail::find()
-                        ->select(['settingsdetail.Id','settingsdetail.Value','settingsdetail.IdSetting','settingsdetail.IdState'])
-                        ->joinWith('setting b')
-                        ->joinWith('state c')
-                        ->where(['settingsdetail.Code'=> self::PASSWORD_EXPIRATION_PARAMETER
-                                , 'b.Code'=> self::PASSWORD_EXPIRATION_PARAMETER
-                                , 'c.Code'=> Settings::STATUS_ACTIVE,
-                            ])
-                        ->asArray()
-                        ->one();
-                $days = !empty($daysSetting) ? (int)$daysSetting['Value']:120;
-                $date = date_add(date_create(date('Y-m-d')), date_interval_create_from_date_string("$days day"));
-            }
-            $this->PasswordExpirationDate = $date->format('Y-m-d');
-        }
+        $this->DisplayName =empty($this->DisplayName) ? $this->LastName.(!empty($this->FirstName) ? $this->FirstName[0]:'') : $this->DisplayName;
+        $this->CreateDate = !empty($this->CreateDate) ? \Yii::$app->getFormatter()->asDate($this->CreateDate, 'php:Y-m-d') : $this->CreateDate;
+        
+        $this->_defineExpirationDatePass();
         return parent::beforeSave($insert);
     }
     
     public function afterSave($insert, $changedAttributes) {
-
+        
         $this->refresh();
         $this->_getAssignedRole();
         if(!$this->_verifyRole()){
@@ -400,7 +486,7 @@ class User extends ActiveRecord implements IdentityInterface
         } else {
             Yii::$app->getSession()->setFlash('success','Usuario Actualizado Correctamente');
         }
-
+        
         if($this->usersetting){
             $settings = $this->usersetting;
             $useroptions = new Useroptions();
@@ -417,21 +503,22 @@ class User extends ActiveRecord implements IdentityInterface
         return parent::afterSave($insert, $changedAttributes);
     }
     
+    
     public function afterFind() {
-
+        
         if($this->scenario != self::SCENARIO_CONSOLE){
             $this->profileName = $this->IdProfile ? $this->profile->Name:"";
             $this->completeName = $this->FirstName." ".$this->LastName;
 
             $this->stateName = $this->IdState ? $this->state->Name:"";
-            #$this->serviceCentreName = $this->IdServiceCentre ? $this->idServiceCentre->Name:"";
+            $this->serviceCentreName = $this->IdServiceCentre ? $this->serviceCentre->Name:"";
 
             $this->disabled = ( !$this->isNewRecord ? ( $this->IdState ? ($this->state->Code == self::STATE_INACTIVE):FALSE ): FALSE);
         }
-
-        $this->CreatedDate = \Yii::$app->formatter->asDate($this->CreatedDate,'php:d-m-Y');
-        $this->UpdatedDate = \Yii::$app->formatter->asDate($this->UpdatedDate,'php:d-m-Y');
-
+        
+        $this->CreateDate = \Yii::$app->formatter->asDate($this->CreateDate,'php:d-m-Y');
+        $this->UpdateDate = \Yii::$app->formatter->asDate($this->UpdateDate,'php:d-m-Y');
+        
         return parent::afterFind();
     }
     
@@ -456,7 +543,7 @@ class User extends ActiveRecord implements IdentityInterface
                 $this->expired = FALSE;
                 $this->remainingDays = $diff->days;
             }
-
+            
             if($this->expired == FALSE){
                 $warningDays = Settingsdetail::find()
                         ->select(['settingsdetail.Id','settingsdetail.Value','settingsdetail.IdSetting'])
@@ -467,7 +554,7 @@ class User extends ActiveRecord implements IdentityInterface
                     $this->warningPass = (int) $warningDays->Value >= $diff->days;
                 }
             }
-            $this->PasswordExpirationDate = $this->PasswordExpirationDate ? \Yii::$app->formatter->asDate($this->PasswordExpirationDate, 'php:d-m-Y'):$this->PasswordExpirationDate;
+            $this->PasswordExpirationDate = $this->PasswordExpirationDate ? \Yii::$app->formatter->asDate($this->PasswordExpirationDate, 'php:d-m-Y'):$this->PasswordExpirationDate;     
         } catch (Exception $exc){
             throw $exc;
         }
@@ -503,7 +590,7 @@ class User extends ActiveRecord implements IdentityInterface
             throw $ex;
         }
     }
-
+    
     public function comparePasswords($password){
         try {
             return \Yii::$app->security->validatePassword($password, $this->PasswordHash);
@@ -511,5 +598,71 @@ class User extends ActiveRecord implements IdentityInterface
             throw $ex;
         }
     }
+    
+    public function getUserMenu(){
+        try {
+            $useritems = new Useroptions();
+            $useritems->IdUser = $this->Id;
 
+            $profileoptions = new Profileoptions();
+            $profileoptions->IdProfile = $this->IdProfile;
+            $profileoptions->IdOption = NULL;
+            $itemsprofile = $profileoptions->getChildrenOptions($profileoptions);
+            
+        } catch (Exception $ex) {
+            throw $ex;
+        }
+    }
+    
+    public function updateRamdomPass(){
+        try {
+            $this->_password = Yii::$app->security->generateRandomString(12);
+            $this->_defineExpirationDatePass();
+            $this->save();
+        } catch (Exception $ex) {
+            throw $ex;
+        }
+    }
+    
+    public function _defineExpirationDatePass(){
+        try {
+            if($this->_password){
+                $this->setPassword($this->_password);
+                $this->_customPassword = TRUE;
+                $this->_new = $this->isNewRecord;
+
+                $user = \Yii::$app->user->getIdentity();
+                if(($this->isNewRecord || $this->Username != $user->Username) && $this->scenario != self::SCENARIO_WEBSERVICE){
+                    $date = date_sub(date_create(date('Y-m-d')), date_interval_create_from_date_string("1 day"));
+                } else {
+                    $days = $this->_getExpirationPassSetting();
+                    $date = date_add(date_create(date('Y-m-d')), date_interval_create_from_date_string("$days day"));
+                    
+                }
+                $this->PasswordExpirationDate = $date->format('Y-m-d');
+            }
+        } catch (Exception $ex) {
+            throw $ex;
+        }
+    }
+    
+    private function _getExpirationPassSetting(){
+        try {
+            $daysSetting = Settingsdetail::find()
+                        ->select(['settingsdetail.Id','settingsdetail.Value','settingsdetail.IdSetting','settingsdetail.IdState'])
+                        ->joinWith('setting b')
+                        ->joinWith('state c')
+                        ->where(['settingsdetail.Code'=> self::PASSWORD_EXPIRATION_PARAMETER
+                                , 'b.Code'=> self::PASSWORD_EXPIRATION_PARAMETER
+                                , 'c.Code'=> Settings::STATUS_ACTIVE,
+                            ])
+                        ->asArray()
+                        ->one();
+                $days = !empty($daysSetting) ? (int)$daysSetting['Value']:120;
+                return $days;
+        } catch (Exception $ex) {
+            throw $ex;
+        }
+    }
+           
 }

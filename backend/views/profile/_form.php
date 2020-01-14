@@ -4,26 +4,40 @@ use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 
 /* @var $this yii\web\View */
-/* @var $model common\models\Profiles */
+/* @var $model common\models\Profile */
 /* @var $form yii\widgets\ActiveForm */
+
+$options = [
+    'maxlength'=>TRUE,
+    'disabled'=>$model->disabled,
+];
+$addoptions = [];
+if(!$model->isNewRecord && !$model->disabled){
+    $addoptions['disabled']= TRUE;
+}
+$addoptions = array_merge($options, $addoptions);
 ?>
 
-<div class="profiles-form">
-
-    <?php $form = ActiveForm::begin(); ?>
-
-    <?= $form->field($model, 'Name')->textInput(['maxlength' => true]) ?>
-
-    <?= $form->field($model, 'KeyWord')->textInput(['maxlength' => true]) ?>
-
-    <?= $form->field($model, 'IdState')->textInput() ?>
-
-    <?= $form->field($model, 'Description')->textarea(['rows' => 6]) ?>
-
-    <div class="form-group">
-        <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
+<div class="panel-body">
+    <div class="row">
+        <div class="col-md-8">
+            <?= $form->field($model, 'Name')->textInput($options) ?>
+        </div>
     </div>
-
-    <?php ActiveForm::end(); ?>
-
+    <div class="row">
+        <div class="col-md-4">
+            <?= $form->field($model, 'KeyWord')->textInput($addoptions) ?>
+        </div>
+        <div class="col-md-4">
+            <?= $form->field($model, 'Code')->textInput($addoptions) ?>
+        </div>
+        <div class="col-md-4">
+            <?= $form->field($model, 'IdState')->dropDownList($model->getStates(),$options) ?>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <?= $form->field($model, 'Description')->textarea($options) ?>
+        </div>
+    </div>
 </div>

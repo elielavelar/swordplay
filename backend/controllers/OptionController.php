@@ -5,6 +5,7 @@ namespace backend\controllers;
 use Yii;
 use backend\models\Options;
 use backend\models\OptionSearch;
+use backend\models\Optionenvironment;
 #use backend\controllers\CustomController;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
@@ -13,7 +14,7 @@ use yii\web\Response;
 use yii\helpers\Json;
 use Exception;
 
-use common\models\Types;
+use common\models\Type;
 
 /**
  * OptionController implements the CRUD actions for Options model.
@@ -55,32 +56,34 @@ class OptionController extends Controller
     public function actionIndex()
     {
         $model = new Options();
-        $model->IdType = Types::findOne(['Code'=>Options::TYPE_MODULE])->Id;
-        $model->IdUrlType = Types::findOne(['Code'=>Options::URL_INSIDE])->Id;
+        $model->IdType = Type::findOne(['Code'=>Options::TYPE_MODULE])->Id;
+        $model->IdUrlType = Type::findOne(['Code'=>Options::URL_INSIDE])->Id;
         $model->IdParent = NULL;
         $model->RequireAuth = Options::REQUIRE_AUTH_TRUE;
         
         $modelGroup = new Options();
-        $modelGroup->IdType = Types::findOne(['Code'=>Options::TYPE_GROUP])->Id;
+        $modelGroup->IdType = Type::findOne(['Code'=>Options::TYPE_GROUP])->Id;
         $modelGroup->IdUrlType = $model->IdUrlType;
         $modelGroup->IdParent = NULL;
         $modelGroup->RequireAuth = Options::REQUIRE_AUTH_TRUE;
         
         $modelController = new Options();
-        $modelController->IdType = Types::findOne(['Code'=>Options::TYPE_CONTROLLER])->Id;
+        $modelController->IdType = Type::findOne(['Code'=>Options::TYPE_CONTROLLER])->Id;
         $modelController->IdUrlType = $model->IdUrlType;
         $modelController->IdParent = NULL;
         $modelController->RequireAuth = Options::REQUIRE_AUTH_TRUE;
         
         $modelAction = new Options();
-        $modelAction->IdType = Types::findOne(['Code'=>Options::TYPE_ACTION])->Id;
+        $modelAction->IdType = Type::findOne(['Code'=>Options::TYPE_ACTION])->Id;
         $modelAction->IdUrlType = $model->IdUrlType;
         $modelAction->IdParent = NULL;
         $modelAction->ItemMenu = 0;
         $modelAction->RequireAuth = Options::REQUIRE_AUTH_TRUE;
+        $modelAction->SaveLog = Options::SAVE_LOG_DISABLED;
+        $modelAction->SaveTransaction = Options::SAVE_TRANSACION_DISABLED;
         
         $modelPermission = new Options();
-        $modelPermission->IdType = Types::findOne(['Code'=>Options::TYPE_PERMISSION])->Id;
+        $modelPermission->IdType = Type::findOne(['Code'=>Options::TYPE_PERMISSION])->Id;
         $modelPermission->IdUrlType = $model->IdUrlType;
         $modelPermission->IdParent = NULL;
         $modelPermission->ItemMenu = 0;
@@ -171,7 +174,7 @@ class OptionController extends Controller
                     'title'=>$title.' '.$dttitle,
                 ];
             } else {
-                $message = $this->setMessageErrors($model->errors);
+                $message = Yii::$app->customFunctions->getErrors($model->errors);
                 throw new Exception($message, 90003);
             }
         } catch (Exception $ex){
@@ -209,6 +212,8 @@ class OptionController extends Controller
         try {
             if (Yii::$app->request->isAjax) {
                 $data = Yii::$app->request->post('Options');
+                $environment = isset($data[\yii\helpers\StringHelper::basename(Optionenvironment::className())]) ? $data[\yii\helpers\StringHelper::basename(Optionenvironment::className())]:NULL;
+                unset($data[\yii\helpers\StringHelper::basename(Optionenvironment::className())]);
                 $dttitle = 'Agregado';
                 if(!empty($data['Id'])){
                     $model = $this->findModel($data['Id']);
@@ -218,6 +223,13 @@ class OptionController extends Controller
                     }
                 } 
                 $model->attributes = $data;
+                if(!empty($environment) && gettype($environment) == 'array'){
+                    $model->Optionenvironment = $environment;
+                    $model->_emptyEnvironments = FALSE;
+                } else {
+                    $model->Optionenvironment = [];
+                    $model->_emptyEnvironments = TRUE;
+                }
                 if($model->save()){
                     $model->refresh();
                     $title = $model->IdType ? $model->type->Name:'Opción';
@@ -249,7 +261,7 @@ class OptionController extends Controller
                 $data = \Yii::$app->request->post('data');
                 $criteria = Json::decode($data, TRUE);
                 $option = Options::findOne($criteria);
-                $response = array_merge(['success'=>TRUE], $option->attributes);
+                $response = array_merge(['success'=>TRUE], $option->getExtendedValues());
             }
         } catch (Exception $exc) {
             $response = [

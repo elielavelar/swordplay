@@ -5,12 +5,12 @@ namespace backend\models;
 use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use common\models\Types;
+use common\models\Type;
 
 /**
  * TypeSearch represents the model behind the search form about `common\models\Type`.
  */
-class TypeSearch extends Types
+class TypeSearch extends Type
 {
     /**
      * @inheritdoc
@@ -41,7 +41,7 @@ class TypeSearch extends Types
      */
     public function search($params)
     {
-        $query = Types::find();
+        $query = Type::find();
 
         // add conditions that should always apply here
 

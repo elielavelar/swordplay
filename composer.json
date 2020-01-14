@@ -18,14 +18,24 @@
         "yiisoft/yii2": "~2.0.6",
         "yiisoft/yii2-bootstrap": "~2.0.0",
         "yiisoft/yii2-swiftmailer": "~2.0.0 || ~2.1.0",
-        "webtoolsnz/yii2-admin-lte": "*",
-        "yii2tech/spreadsheet": "^1.0",
-        "components/font-awesome": "^5.0.6",
+        "yii2mod/yii2-sweet-alert": "*",
         "omnilight/yii2-sweetalert": "1.0.*",
         "kartik-v/yii2-widgets": "dev-master",
         "kartik-v/yii2-helpers": "dev-master",
+        "kartik-v/yii2-mpdf": "*",
+        "kartik-v/yii2-export": "@dev",
         "kartik-v/yii2-detail-view": "*",
-        "kartik-v/yii2-password": "@dev"
+        "kartik-v/yii2-password": "@dev",
+        "nepstor/yii2-datetime-compare-validator": "^2.0",
+        "miloschuman/yii2-highcharts-widget": "^6.0",
+        "moonlandsoft/yii2-phpexcel": "*",
+        "trntv/yii2-datetime-widget": "^1.1",
+        "webtoolsnz/yii2-admin-lte": "*",
+        "fortawesome/font-awesome": "^4.7",
+        "npm-asset/font-awesome" : "~5.1",
+        "fedemotta/yii2-widget-datatables": "*",
+        "bower-asset/moment": "*",
+        "bower-asset/moment-timer": "*"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.0.0",
@@ -39,14 +49,9 @@
         "fxp-asset": {
             "installer-paths": {
                 "npm-asset-library": "vendor/npm",
-                "bower-asset-library": "vendor/bower"
+                "bower-asset-library": "vendor/bower-asset"
             }
         }
     },
-    "repositories": [
-        {
-            "type": "composer",
-            "url": "https://asset-packagist.org"
-        }
-    ]
+    "extra": {}
 }

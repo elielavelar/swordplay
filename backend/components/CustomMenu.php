@@ -11,7 +11,7 @@ namespace backend\components;
 /**
  * Description of CustomMenu
  *
- * @author Eliel Avelar <elielavelar@gmail.com>
+ * @author avelare
  */
 use webtoolsnz\AdminLte\widgets\Menu;
 

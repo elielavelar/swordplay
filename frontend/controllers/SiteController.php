@@ -7,11 +7,15 @@ use yii\web\BadRequestHttpException;
 use yii\web\Controller;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
-use common\models\LoginForm;
+use frontend\models\LoginForm;
 use frontend\models\PasswordResetRequestForm;
 use frontend\models\ResetPasswordForm;
 use frontend\models\SignupForm;
+use frontend\models\ChangePasswordForm;
 use frontend\models\ContactForm;
+use common\models\Appointments;
+use backend\models\Useroptions;
+use backend\models\Settings;
 
 /**
  * Site controller
@@ -19,17 +23,17 @@ use frontend\models\ContactForm;
 class SiteController extends Controller
 {
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function behaviors()
     {
         return [
             'access' => [
                 'class' => AccessControl::className(),
-                'only' => ['logout', 'signup'],
+                'only' => ['logout'],
                 'rules' => [
                     [
-                        'actions' => ['signup'],
+                        'actions' => ['login'],
                         'allow' => true,
                         'roles' => ['?'],
                     ],
@@ -42,15 +46,12 @@ class SiteController extends Controller
             ],
             'verbs' => [
                 'class' => VerbFilter::className(),
-                'actions' => [
-                    'logout' => ['post'],
-                ],
             ],
         ];
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function actions()
     {
@@ -72,6 +73,15 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
+        if(!\Yii::$app->user->isGuest){
+            $user = \Yii::$app->user->getIdentity();
+            $user->setExpirationDate();
+            if($user->expired){
+                return $this->redirect('site/changepassword');
+            } else {
+                $this->_loadMenu();
+            }
+        }
         return $this->render('index');
     }
 
@@ -80,18 +90,38 @@ class SiteController extends Controller
      *
      * @return mixed
      */
+    /**
+     * Login action.
+     *
+     * @return string
+     */
     public function actionLogin()
     {
         if (!Yii::$app->user->isGuest) {
             return $this->goHome();
         }
-
+        
         $model = new LoginForm();
-        if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->goBack();
+        if ($model->load(Yii::$app->request->post())) {
+            $model->rememberMe = TRUE;
+            if($model->login()){
+                $user = \Yii::$app->user->getIdentity();
+                $user->setExpirationDate();
+                if($user->expired){
+                    return $this->redirect('changepassword');
+                } else {
+                    if($user->warningPass){
+                        $url = \Yii::$app->urlManager->createUrl(['site/changepassword']);
+                        Yii::$app->session->setFlash('warning', 'Su contraseña expira en '.$user->remainingDays." días. Se recomienda actualizarla. <u>".\yii\helpers\Html::a('Actualizar', $url,['class'=>''])."</u>");
+                    }
+                    return $this->goBack();
+                }
+            } else {
+                return $this->render('login', [
+                    'model' => $model,
+                ]);
+            }
         } else {
-            $model->password = '';
-
             return $this->render('login', [
                 'model' => $model,
             ]);
@@ -108,6 +138,38 @@ class SiteController extends Controller
         Yii::$app->user->logout();
 
         return $this->goHome();
+    }
+    
+    public function actionChangepassword(){
+        $user = \Yii::$app->user->getIdentity();
+        $user->setExpirationDate();
+        $expired = $user->expired;
+
+        $model = new ChangePasswordForm();
+        if ($model->load(Yii::$app->request->post())) {
+            if($user->validatePassword($model->oldPassword)){
+                if($model->setPassword()){
+                    Yii::$app->session->setFlash('success', 'Su Contraseña ha sido actualizada');
+                    if($expired){
+                        return $this->redirect(['site/logout']);
+                    } else {
+                        return $this->goBack();
+                    }
+                } else {
+                    
+                }
+            } else {
+                $model->addError('oldPassword','Contraseña anterior no válida');
+            }
+        } else {
+            if($user->expired){
+                Yii::$app->session->setFlash('error', 'Su contraseña ha expirado');
+            }
+        }
+        
+        return $this->render('changePassword', [
+            'model' => $model,
+        ]);
     }
 
     /**
@@ -144,27 +206,6 @@ class SiteController extends Controller
     }
 
     /**
-     * Signs user up.
-     *
-     * @return mixed
-     */
-    public function actionSignup()
-    {
-        $model = new SignupForm();
-        if ($model->load(Yii::$app->request->post())) {
-            if ($user = $model->signup()) {
-                if (Yii::$app->getUser()->login($user)) {
-                    return $this->goHome();
-                }
-            }
-        }
-
-        return $this->render('signup', [
-            'model' => $model,
-        ]);
-    }
-
-    /**
      * Requests password reset.
      *
      * @return mixed
@@ -174,17 +215,19 @@ class SiteController extends Controller
         $model = new PasswordResetRequestForm();
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
             if ($model->sendEmail()) {
-                Yii::$app->session->setFlash('success', 'Check your email for further instructions.');
+                Yii::$app->session->setFlash('success', 'Verifique su correo electrónico.');
 
                 return $this->goHome();
             } else {
-                Yii::$app->session->setFlash('error', 'Sorry, we are unable to reset password for the provided email address.');
+                Yii::$app->session->setFlash('error', 'Lo Sentimos, no fue posible restablecer la contraseña usand el correo electrónico provisto');
+                //print_r($model); die();
             }
         }
 
         return $this->render('requestPasswordResetToken', [
             'model' => $model,
         ]);
+        
     }
 
     /**
@@ -203,7 +246,7 @@ class SiteController extends Controller
         }
 
         if ($model->load(Yii::$app->request->post()) && $model->validate() && $model->resetPassword()) {
-            Yii::$app->session->setFlash('success', 'New password saved.');
+            Yii::$app->session->setFlash('success', 'Nueva contraseña guardada');
 
             return $this->goHome();
         }
@@ -211,5 +254,57 @@ class SiteController extends Controller
         return $this->render('resetPassword', [
             'model' => $model,
         ]);
+    }
+    
+    private function _loadMenu(){
+        try {
+            if(Yii::$app->user->isGuest){
+                $this->_loadDefaultMenu();
+            } else {
+                $session = \Yii::$app->session;
+                $user = Yii::$app->user->getIdentity();
+                
+                $items = $session->get('itemsMenu');
+                if(empty($items)){
+                    $useroptions = new Useroptions();
+                    $useroptions->IdUser = $user->Id;
+                    $useroptions->IdOption = NULL;
+                    $itemsMenu = $useroptions->loadMenu();
+                    $session->set('itemsMenu', $itemsMenu);
+                }
+                $this->_setSubMenuSettings();
+            }
+        } catch (Exception $ex) {
+            throw $ex;
+        }
+    }
+    
+    private function _loadDefaultMenu(){
+        try {
+            $options = new Options();
+            $session = Yii::$app->session;
+            $session->open();
+            $itemsMenu = $options->loadDefaultMenu();
+            $session->set('itemsMenu', $itemsMenu);
+        } catch (Exception $ex) {
+            throw $ex;
+        }
+    }
+    
+    public function _setSubMenuSettings(){
+        try {
+            $session = \Yii::$app->session;
+            $settings = Settings::find()
+                    ->where(['KeyWord' => 'Options', 'Code' => 'SUBMENU'])->one();
+            $submenu = [];
+            if(!empty($settings)){
+                foreach ($settings->settingsdetails as $detail){
+                    $submenu[$detail->Code] = $detail->Value;
+                }
+            }
+            $session->set('subMenu', $submenu);
+        } catch (Exception $ex) {
+            throw $ex;
+        }
     }
 }

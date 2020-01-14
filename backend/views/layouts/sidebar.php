@@ -1,45 +1,43 @@
-<?php 
+<?php
+
 use yii\helpers\Url;
+use yii\helpers\Html;
 use backend\components\CustomMenu;
 use backend\models\Settingsdetail;
 use backend\models\Options;
+use kartik\widgets\SwitchInput;
 
-    if ($this->theme->layout == \webtoolsnz\AdminLte\Theme::LAYOUT_SIDEBAR_MINI) { 
+if ($this->theme->layout == \webtoolsnz\AdminLte\Theme::LAYOUT_SIDEBAR_MINI) {
 
     $menuItems = [];
-
-    if(!empty(Yii::$app->session->get('itemsMenu'))){
+    $submenu = [];
+    if (!empty(Yii::$app->session->get('itemsMenu'))) {
         $menuItems = array_merge($menuItems, Yii::$app->session->get('itemsMenu'));
     }
-    #echo "<pre>";    print_r($menuItems); #die();
-    $this->theme->mainMenuItems = $menuItems;
     
-    $_controller = Yii::$app->controller->id;
-    if($_controller == 'site'){
-        $setting = Settingsdetail::find()
-                ->joinWith('setting b')
-                ->where(['b.KeyWord' => 'General','b.Code'=> Options::DEFAULT_OPTION,'settingsdetail.Code' => Options::DEFAULT_OPTION])
-                ->one();
-        if(!empty($setting)){
-            $_controller = $setting->Value;
-        }
+    if(!empty(Yii::$app->session->get('subMenu'))){
+        $submenu = Yii::$app->session->get('subMenu');
     }
-    $itemActive = "@web/".$_controller;
-    
-    #echo $itemActive; #die();
-    
-?>
-<aside class="main-sidebar">
+    $this->theme->mainMenuItems = $menuItems;
+    $_controller = Yii::$app->controller->id;
 
-    <section class="sidebar">
-        <!-- sidebar menu: : style can be found in sidebar.less -->
-        <?= CustomMenu::widget([
-            'options' => ['class' => 'sidebar-menu'],
-            'items' => $this->theme->mainMenuItems,
-            'route' => $itemActive
-        ]) ?>
-    </section>
-    <!-- /.sidebar -->
-</aside>
+    if(isset($submenu[$_controller])){
+        $_controller = $submenu[$_controller];
+    }
+    $itemActive = "@web/" . $_controller;
+    ?>
+    <aside class="main-sidebar">
+
+        <section class="sidebar">
+            <!-- sidebar menu: : style can be found in sidebar.less -->
+            <?=CustomMenu::widget([
+                'options' => ['class' => 'sidebar-menu'],
+                'items' => $this->theme->mainMenuItems,
+                'route' => $itemActive
+            ])
+            ?>
+        </section>
+        <!-- /.sidebar -->
+    </aside>
 
 <?php } ?>

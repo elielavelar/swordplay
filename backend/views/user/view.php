@@ -6,7 +6,7 @@ use kartik\detail\DetailView;
 /* @var $this yii\web\View */
 /* @var $model common\models\User */
 
-$this->title = $model->completeName;
+$this->title = $model->DisplayName;
 $this->params['breadcrumbs'][] = ['label' => 'Usuarios', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 
@@ -17,39 +17,48 @@ $user = Yii::$app->user->getIdentity();
     <h1><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?= Yii::$app->customFunctions->userCan('userUpdate') ? Html::a('Actualizar', ['update', 'id' => $model->id], ['class' => 'btn btn-primary']):""; ?>
-        <?= Yii::$app->customFunctions->userCan('userDelete') && $model->username != $user->username ? Html::a('Eliminar', ['delete', 'id' => $model->id], [
+        <?= Yii::$app->customFunctions->userCan('userUpdate') ? Html::a('<i class="fas fa-edit"></i> Actualizar', ['update', 'id' => $model->Id], ['class' => 'btn btn-primary']):""; ?>
+        <?= Yii::$app->customFunctions->userCan('userDelete') && $model->Username != $user->Username ? Html::a('<i class="fas fa-times"></i> Eliminar', ['delete', 'id' => $model->Id], [
             'class' => 'btn btn-danger',
             'data' => [
-                'confirm' => 'Está seguro que desea eliminar este registro?',
+                'confirm' => '¿Está seguro que desea eliminar este registro?',
                 'method' => 'post',
             ],
         ]):""; ?>
     </p>
-
-    <?= DetailView::widget([
-        'model' => $model,
-        'attributes' => [
-            'username',
-            'email:email',
-            [
-                'attribute'=>'IdProfile',
-                'value'=>$model->IdProfile ? $model->idProfile->Name:"",
-            ],
-            'CodEmployee',
-            [
-                'attribute'=>'IdServiceCentre',
-                'value'=>$model->IdServiceCentre ? $model->idServiceCentre->Name:"",
-            ],
-            [
-                'attribute'=>'IdState',
-                'value'=>$model->IdState ? $model->idState->Name:"",
-            ],
-            'created_at',
-            'updated_at',
-            'PasswordExpirationDate',
-        ],
-    ]) ?>
-    <?= Html::a('Cancelar', ['index'], ['class'=>'btn btn-danger'])?>
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-lg-12">
+                    <?= DetailView::widget([
+                        'model' => $model,
+                        'attributes' => [
+                            'Username',
+                            'DisplayName',
+                            'Email:email',
+                            [
+                                'attribute'=>'IdProfile',
+                                'value'=>$model->IdProfile ? $model->profile->Name:"",
+                            ],
+                            'CodEmployee',
+                            [
+                                'attribute'=>'IdServiceCentre',
+                                'value'=>$model->IdServiceCentre ? $model->serviceCentre->Name:"",
+                            ],
+                            [
+                                'attribute'=>'IdState',
+                                'value'=>$model->IdState ? $model->state->Name:"",
+                            ],
+                            'CreateDate',
+                            'UpdateDate',
+                            'PasswordExpirationDate',
+                        ],
+                    ]) ?>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <?= Html::a('<i class="fas fa-arrow-circle-left"></i> Cancelar', ['index'], ['class'=>'btn btn-danger'])?>
 
 </div>

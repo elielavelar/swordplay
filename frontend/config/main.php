@@ -8,8 +8,13 @@ $params = array_merge(
 
 return [
     'id' => 'app-frontend',
+    'name'=>'Sistema de Administración SwordPlay',
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
+    'aliases' => [
+        '@bower' => '@vendor/bower-asset',
+        '@npm'   => '@vendor/npm-asset',
+    ],
     'controllerNamespace' => 'frontend\controllers',
     'components' => [
         'request' => [
@@ -17,7 +22,7 @@ return [
         ],
         'user' => [
             'identityClass' => 'common\models\User',
-            'enableAutoLogin' => true,
+            'enableAutoLogin' => false,
             'identityCookie' => ['name' => '_identity-frontend', 'httpOnly' => true],
         ],
         'session' => [
@@ -36,14 +41,52 @@ return [
         'errorHandler' => [
             'errorAction' => 'site/error',
         ],
-        /*
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
+                '<controller:\w+>/<id:\d+>' => '<controller>/view', 
+                '<controller:\w+>/<action:\w+>/<id:\d+>' => '<controller>/<action>', 
+                '<controller:\w+>/<action:\w+>' => '<controller>/<action>',
+                '<controller:\w+\-\w+>/<id:\d+>' => '<controller>/view',  
+                ['class' => 'yii\rest\UrlRule', 'controller' => 'site'],
             ],
         ],
-        */
+        'urlBackendManager' => [
+            'class'=>'yii\web\urlManager',
+            'enablePrettyUrl' => true,
+            'showScriptName' => false,
+            'baseUrl'=>'/swordplay/backend/web',
+            'rules' => [
+                '<controller:\w+>/<id:\d+>' => '<controller>/view', 
+                '<controller:\w+>/<action:\w+>/<id:\d+>' => '<controller>/<action>', 
+                '<controller:\w+>/<action:\w+>' => '<controller>/<action>',
+                '<controller:\w+\-\w+>/<id:\d+>' => '<controller>/view',  
+                ['class' => 'yii\rest\UrlRule', 'controller' => 'site'],
+            ],
+        ],
+        'urlFrontendManager' => [
+            'class'=>'yii\web\urlManager',
+            'enablePrettyUrl' => true,
+            'showScriptName' => false,
+            'baseUrl'=>'/swordplay/frontend/web',
+            'rules' => [
+                '<controller:\w+>/<id:\d+>' => '<controller>/view', 
+                '<controller:\w+>/<action:\w+>/<id:\d+>' => '<controller>/<action>', 
+                '<controller:\w+>/<action:\w+>' => '<controller>/<action>',
+                '<controller:\w+\-\w+>/<id:\d+>' => '<controller>/view',  
+                ['class' => 'yii\rest\UrlRule', 'controller' => 'site'],
+            ],
+        ],
+        'customFunctions'=>[
+            'class'=>'frontend\components\CustomFunctions',
+        ],
+        'view' => [
+            'theme' => [
+                'class' => \webtoolsnz\AdminLte\Theme::className(),
+                'skin' => \webtoolsnz\AdminLte\Theme::SKIN_BLUE_DARK,
+            ]
+        ],
     ],
     'params' => $params,
 ];

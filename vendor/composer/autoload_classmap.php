@@ -6,6 +6,11 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
+    'FPDF_TPL' => $vendorDir . '/setasign/fpdi/fpdf_tpl.php',
+    'FPDI' => $vendorDir . '/setasign/fpdi/fpdi.php',
+    'FilterASCII85' => $vendorDir . '/setasign/fpdi/filters/FilterASCII85.php',
+    'FilterASCIIHexDecode' => $vendorDir . '/setasign/fpdi/filters/FilterASCIIHexDecode.php',
+    'FilterLZW' => $vendorDir . '/setasign/fpdi/filters/FilterLZW.php',
     'PHPUnit\\Exception' => $vendorDir . '/phpunit/phpunit/src/Exception.php',
     'PHPUnit\\Framework\\Assert' => $vendorDir . '/phpunit/phpunit/src/Framework/Assert.php',
     'PHPUnit\\Framework\\AssertionFailedError' => $vendorDir . '/phpunit/phpunit/src/Framework/AssertionFailedError.php',
@@ -102,6 +107,8 @@ return array(
     'PHPUnit\\Framework\\MockObject\\Matcher\\Parameters' => $vendorDir . '/phpunit/phpunit/src/Framework/MockObject/Matcher/Parameters.php',
     'PHPUnit\\Framework\\MockObject\\Matcher\\StatelessInvocation' => $vendorDir . '/phpunit/phpunit/src/Framework/MockObject/Matcher/StatelessInvocation.php',
     'PHPUnit\\Framework\\MockObject\\MockBuilder' => $vendorDir . '/phpunit/phpunit/src/Framework/MockObject/MockBuilder.php',
+    'PHPUnit\\Framework\\MockObject\\MockMethod' => $vendorDir . '/phpunit/phpunit/src/Framework/MockObject/MockMethod.php',
+    'PHPUnit\\Framework\\MockObject\\MockMethodSet' => $vendorDir . '/phpunit/phpunit/src/Framework/MockObject/MockMethodSet.php',
     'PHPUnit\\Framework\\MockObject\\MockObject' => $vendorDir . '/phpunit/phpunit/src/Framework/MockObject/ForwardCompatibility/MockObject.php',
     'PHPUnit\\Framework\\MockObject\\RuntimeException' => $vendorDir . '/phpunit/phpunit/src/Framework/MockObject/Exception/RuntimeException.php',
     'PHPUnit\\Framework\\MockObject\\Stub' => $vendorDir . '/phpunit/phpunit/src/Framework/MockObject/Stub.php',
@@ -142,6 +149,7 @@ return array(
     'PHPUnit\\Runner\\AfterSuccessfulTestHook' => $vendorDir . '/phpunit/phpunit/src/Runner/Hook/AfterSuccessfulTestHook.php',
     'PHPUnit\\Runner\\AfterTestErrorHook' => $vendorDir . '/phpunit/phpunit/src/Runner/Hook/AfterTestErrorHook.php',
     'PHPUnit\\Runner\\AfterTestFailureHook' => $vendorDir . '/phpunit/phpunit/src/Runner/Hook/AfterTestFailureHook.php',
+    'PHPUnit\\Runner\\AfterTestHook' => $vendorDir . '/phpunit/phpunit/src/Runner/Hook/AfterTestHook.php',
     'PHPUnit\\Runner\\AfterTestWarningHook' => $vendorDir . '/phpunit/phpunit/src/Runner/Hook/AfterTestWarningHook.php',
     'PHPUnit\\Runner\\BaseTestRunner' => $vendorDir . '/phpunit/phpunit/src/Runner/BaseTestRunner.php',
     'PHPUnit\\Runner\\BeforeFirstTestHook' => $vendorDir . '/phpunit/phpunit/src/Runner/Hook/BeforeFirstTestHook.php',
@@ -195,6 +203,7 @@ return array(
     'PHPUnit\\Util\\TestDox\\XmlResultPrinter' => $vendorDir . '/phpunit/phpunit/src/Util/TestDox/XmlResultPrinter.php',
     'PHPUnit\\Util\\TextTestListRenderer' => $vendorDir . '/phpunit/phpunit/src/Util/TextTestListRenderer.php',
     'PHPUnit\\Util\\Type' => $vendorDir . '/phpunit/phpunit/src/Util/Type.php',
+    'PHPUnit\\Util\\XdebugFilterScriptGenerator' => $vendorDir . '/phpunit/phpunit/src/Util/XdebugFilterScriptGenerator.php',
     'PHPUnit\\Util\\Xml' => $vendorDir . '/phpunit/phpunit/src/Util/Xml.php',
     'PHPUnit\\Util\\XmlTestListRenderer' => $vendorDir . '/phpunit/phpunit/src/Util/XmlTestListRenderer.php',
     'PHPUnit_Framework_MockObject_MockObject' => $vendorDir . '/phpunit/phpunit/src/Framework/MockObject/MockObject.php',
@@ -545,4 +554,6 @@ return array(
     'TheSeer\\Tokenizer\\TokenCollectionException' => $vendorDir . '/theseer/tokenizer/src/TokenCollectionException.php',
     'TheSeer\\Tokenizer\\Tokenizer' => $vendorDir . '/theseer/tokenizer/src/Tokenizer.php',
     'TheSeer\\Tokenizer\\XMLSerializer' => $vendorDir . '/theseer/tokenizer/src/XMLSerializer.php',
+    'fpdi_pdf_parser' => $vendorDir . '/setasign/fpdi/fpdi_pdf_parser.php',
+    'pdf_context' => $vendorDir . '/setasign/fpdi/pdf_context.php',
 );

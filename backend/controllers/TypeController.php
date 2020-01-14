@@ -3,7 +3,7 @@
 namespace backend\controllers;
 
 use Yii;
-use common\models\Types;
+use common\models\Type;
 use backend\models\TypeSearch;
 use backend\controllers\CustomController;
 use yii\web\NotFoundHttpException;
@@ -125,7 +125,7 @@ class TypeController extends CustomController
      */
     protected function findModel($id)
     {
-        if (($model = Types::findOne($id)) !== null) {
+        if (($model = Type::findOne($id)) !== null) {
             return $model;
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');

@@ -3,8 +3,8 @@
 /**
  * @package   yii2-krajee-base
  * @author    Kartik Visweswaran <kartikv2@gmail.com>
- * @copyright Copyright &copy; Kartik Visweswaran, Krajee.com, 2014 - 2018
- * @version   2.0.0
+ * @copyright Copyright &copy; Kartik Visweswaran, Krajee.com, 2014 - 2019
+ * @version   2.0.5
  */
 
 namespace kartik\base;
@@ -71,6 +71,11 @@ interface BootstrapInterface
      * @var string Bootstrap panel footer
      */
     const BS_PANEL_FOOTER = 'panel-footer';
+
+    /**
+     * @var string Bootstrap panel default contextual color
+     */
+    const BS_PANEL_DEFAULT = 'panel-default';
 
     /**
      * @var string Bootstrap panel primary contextual color
@@ -376,6 +381,11 @@ interface BootstrapInterface
      * @var string Bootstrap center block style
      */
     const BS_CENTER_BLOCK = 'center-block';
+
+    /**
+     * @var string Bootstrap hide print style
+     */
+    const BS_HIDE = 'hide';
 
     /**
      * @var string Bootstrap hidden print style

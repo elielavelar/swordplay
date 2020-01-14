@@ -18,9 +18,9 @@ class UserSearch extends User
     public function rules()
     {
         return [
-            [['Id', 'IdState', 'IdState','IdProfile'], 'integer'],
-            [['Username', 'CreatedDate', 'UpdatedDate', 'AuthKey', 'PasswordHash', 'PasswordResetToken', 'Email','completeName'], 'safe'],
-            [['completeName'],'string'],
+            [['Id', 'CreateDate', 'UpdateDate','IdState','IdServiceCentre','IdProfile'], 'integer'],
+            [['Username', 'AuthKey', 'PasswordHash', 'PasswordResetToken', 'Email','DisplayName', 'CodEmployee'], 'safe'],
+            [['DisplayName','CodEmployee'],'string'],
         ];
     }
 
@@ -50,16 +50,16 @@ class UserSearch extends User
             'query' => $query,
         ]);
         
-        $dataProvider->setSort([
-            'attributes' => array_merge($this->attributes(),[
-                'completeName' => [
-                    'asc' => ['FirstName' => SORT_ASC, 'LastName' => SORT_ASC],
-                    'desc' => ['FirstName' => SORT_DESC, 'LastName' => SORT_DESC],
-                    'label' => 'Usuario',
-                    'default' => SORT_ASC
-                ],
-            ]),
-        ]);
+//        $dataProvider->setSort([
+//            'attributes' => array_merge($this->attributes(),[
+//                'completeName' => [
+//                    'asc' => ['FirstName' => SORT_ASC, 'LastName' => SORT_ASC],
+//                    'desc' => ['FirstName' => SORT_DESC, 'LastName' => SORT_DESC],
+//                    'label' => 'Usuario',
+//                    'default' => SORT_ASC
+//                ],
+//            ]),
+//        ]);
 
         $this->load($params);
 
@@ -72,22 +72,26 @@ class UserSearch extends User
         // grid filtering conditions
         $query->andFilterWhere([
             'Id' => $this->Id,
-            'IdState' => $this->IdState,
+            'CreateDate' => $this->CreateDate,
+            'UpdateDate' => $this->UpdateDate,
             'IdProfile' => $this->IdProfile,
-            #'IdServiceCentre' => $this->IdServiceCentre,
+            'IdServiceCentre' => $this->IdServiceCentre,
+            'IdState' => $this->IdState,
+            'CodEmployee' => $this->CodEmployee,
         ]);
 
         $query->andFilterWhere(['like', 'Username', $this->Username])
+            ->andFilterWhere(['like', 'DisplayName', $this->DisplayName])
             ->andFilterWhere(['like', 'AuthKey', $this->AuthKey])
             ->andFilterWhere(['like', 'PasswordHash', $this->PasswordHash])
             ->andFilterWhere(['like', 'PasswordResetToken', $this->PasswordResetToken])
             ->andFilterWhere(['like', 'Email', $this->Email]);
         
-        $query->andWhere('users.FirstName LIKE "%' . $this->completeName . '%" ' . //This will filter when only first name is searched.
-            'OR users.LastName LIKE "%' . $this->completeName . '%" '. //This will filter when only last name is searched.
-            'OR CONCAT(users.FirstName," ",users.SecondName, " ", users.LastName) LIKE "%' . $this->completeName . '%"'. //This will filter when only last name is searched.
-            'OR CONCAT(users.SecondName, " ", users.LastName) LIKE "%' . $this->completeName . '%"'. //This will filter when only last name is searched.
-            'OR CONCAT(users.FirstName, " ", users.LastName) LIKE "%' . $this->completeName . '%"' //This will filter when full name is searched.
+        $query->orWhere('user.FirstName LIKE "%' . $this->DisplayName . '%" ' . //This will filter when only first name is searched.
+            'OR user.LastName LIKE "%' . $this->DisplayName . '%" '. //This will filter when only last name is searched.
+            'OR CONCAT(user.FirstName," ",user.SecondName, " ", user.LastName) LIKE "%' . $this->DisplayName . '%"'. //This will filter when only last name is searched.
+            'OR CONCAT(user.SecondName, " ", user.LastName) LIKE "%' . $this->DisplayName . '%"'. //This will filter when only last name is searched.
+            'OR CONCAT(user.FirstName, " ", user.LastName) LIKE "%' . $this->DisplayName . '%"' //This will filter when full name is searched.
         );
 
         return $dataProvider;

@@ -8,14 +8,21 @@ $params = array_merge(
 
 return [
     'id' => 'app-backend',
-    'name'=>'SwordPlay @dev',
+    'name'=>'Sistema de Administración SwordPlay',
     'basePath' => dirname(__DIR__),
     'controllerNamespace' => 'backend\controllers',
     'bootstrap' => ['log'],
+    'aliases' => [
+        '@bower' => '@vendor/bower-asset',
+        '@npm'   => '@vendor/npm-asset',
+    ],
     'modules' => [],
     'components' => [
         'request' => [
             'csrfParam' => '_csrf-backend',
+            'parsers' => [
+                'application/json' => 'yii\web\JsonParser',
+            ]
         ],
         'user' => [
             'identityClass' => 'common\models\User',
@@ -41,6 +48,32 @@ return [
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
+            'rules' => [
+                '<controller:\w+>/<id:\d+>' => '<controller>/view', 
+                '<controller:\w+>/<action:\w+>/<id:\d+>' => '<controller>/<action>', 
+                '<controller:\w+>/<action:\w+>' => '<controller>/<action>',
+                '<controller:\w+\-\w+>/<id:\d+>' => '<controller>/view',  
+                ['class' => 'yii\rest\UrlRule', 'controller' => 'site'],
+            ],
+        ],
+        'urlBackendManager' => [
+            'class'=>'yii\web\urlManager',
+            'enablePrettyUrl' => true,
+            'showScriptName' => false,
+            'baseUrl'=>'/swordplay/backend/web',
+            'rules' => [
+                '<controller:\w+>/<id:\d+>' => '<controller>/view', 
+                '<controller:\w+>/<action:\w+>/<id:\d+>' => '<controller>/<action>', 
+                '<controller:\w+>/<action:\w+>' => '<controller>/<action>',
+                '<controller:\w+\-\w+>/<id:\d+>' => '<controller>/view',  
+                ['class' => 'yii\rest\UrlRule', 'controller' => 'site'],
+            ],
+        ],
+        'urlFrontendManager' => [
+            'class'=>'yii\web\urlManager',
+            'enablePrettyUrl' => true,
+            'showScriptName' => false,
+            'baseUrl'=>'/swordplay/frontend/web',
             'rules' => [
                 '<controller:\w+>/<id:\d+>' => '<controller>/view', 
                 '<controller:\w+>/<action:\w+>/<id:\d+>' => '<controller>/<action>', 

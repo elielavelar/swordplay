@@ -6,8 +6,9 @@ use Yii;
 use common\models\User;
 use backend\models\UserSearch;
 use backend\models\Useroptions;
-use yii\web\Controller;
-#use backend\controllers\CustomController;
+use common\models\Userpreferences;
+#use yii\web\Controller;
+use backend\controllers\CustomController;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\web\Response;
@@ -18,9 +19,8 @@ use Exception;
 /**
  * UserController implements the CRUD actions for User model.
  */
-class UserController extends Controller
+class UserController extends CustomController
 {
-    /*
     public $customactions = [
         'profile','getrandompass','getfilteruser'
     ];
@@ -32,8 +32,6 @@ class UserController extends Controller
     public function setCustomActions($customactions = []) {
         return parent::setCustomActions($this->getCustomActions());
     }
-     * 
-     */
     /**
      * @inheritdoc
      */
@@ -68,18 +66,19 @@ class UserController extends Controller
     {
         if($this->validateUser()){
             $model = $this->findModel(\Yii::$app->user->getIdentity()->getId());
+            $model->getSettings();
             $model->setExpirationDate();
             if ($model->load(Yii::$app->request->post())) {
                 $post = Yii::$app->request->post(StringHelper::basename($model->className()));
                 $model->_password = !empty($post['_password']) ? $post['_password']:NULL;
                 $model->_passwordconfirm = !empty($post['_passwordconfirm']) ? $post['_passwordconfirm']:NULL;
+                
                 if($model->save()){
                     return $this->redirect(['profile']);
                 } else {
                     $message = \Yii::$app->customFunctions->getErrors($model->errors);
                     Yii::$app->getSession()->setFlash('warning',$message);
                 }
-
             } else {
                 return $this->render('profile', [
                     'model' => $model,
@@ -148,7 +147,7 @@ class UserController extends Controller
         $modelDetail = new Useroptions();
         $modelDetail->IdUser= $model->Id;
         
-        #$set = \Yii::$app->customFunctions->userCan('general');
+        $set = \Yii::$app->customFunctions->userCan('general');
         
         if ($model->load(Yii::$app->request->post())) {
             $post = Yii::$app->request->post(StringHelper::basename($model->className()));
@@ -246,12 +245,12 @@ class UserController extends Controller
             'results'=> ['id'=> '','text'=> '']
         ];
         if(!empty($q)){
-            #$idservicecentre = empty($idservicecentre) ? NULL: $idservicecentre;
+            $idservicecentre = empty($idservicecentre) ? NULL: $idservicecentre;
             $users = User::find()
                     ->select(["id","CONCAT(FirstName,' ',LastName) as text"])
                     ->where(['like',"CONCAT(FirstName,' ',LastName)", $q])
-                    ->orWhere(['like',"Username", $q])
-                    #->andWhere("(:service IS NULL OR :service = idservicecentre )", [':service'=> $idservicecentre])
+                    ->orWhere(['like',"username", $q])
+                    ->andWhere("(:service IS NULL OR :service = idservicecentre )", [':service'=> $idservicecentre])
                     ->asArray()
                     ->all();
             $result['results']= $users;

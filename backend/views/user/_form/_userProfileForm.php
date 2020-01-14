@@ -1,16 +1,11 @@
 <?php
 
 use yii\helpers\Html;
-use yii\widgets\ActiveForm;
 use kartik\password\PasswordInput;
 
 /* @var $this yii\web\View */
 /* @var $model common\models\User */
 /* @var $form yii\widgets\ActiveForm */
-
-$url = \Yii::$app->getUrlManager()->createUrl('user');
-$tableName = 'user';
-$formName = $tableName.'-form';
 
 $options = [
     'maxlength'=>TRUE,
@@ -32,11 +27,10 @@ $verdictTitles = [
 ];
 
 ?>
-<?php $form = ActiveForm::begin(); ?>
 <div class="panel-body">
     <div class="row">
         <div class="col-md-6">
-            <?= $form->field($model, 'username')->textInput($addoptions) ?>
+            <?= $form->field($model, 'Username')->textInput($addoptions) ?>
         </div>
     </div>
     <div class="row">
@@ -57,7 +51,7 @@ $verdictTitles = [
     </div>
     <div class="row">
         <div class="col-md-6">
-            <?= $form->field($model, 'email')->textInput($addoptions) ?>
+            <?= $form->field($model, 'Email')->textInput($addoptions) ?>
         </div>
         <div class="col-md-6">
             <?= $form->field($model, 'CodEmployee')->textInput($addoptions) ?>
@@ -109,39 +103,11 @@ $verdictTitles = [
 </div>
 <div class="panel-footer">
     <div class="row">
-        <div class="form-group pull-right">
-            <?= Html::submitButton($model->isNewRecord ? 'Guardar' : 'Actualizar', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
-            <?= Html::a('Cancelar', '@web/', ['class'=>'btn btn-danger'])?>
+        <div class="col-md-12">
+            <span class="pull-right">
+                <?= Html::submitButton($model->isNewRecord ? 'Guardar' : 'Actualizar', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
+                <?= Html::a('Cancelar', '@web/', ['class'=>'btn btn-danger'])?>
+            </span>
         </div>
     </div>
 </div>
-<?php ActiveForm::end(); ?>
-<?php 
-$script = <<< JS
-    var getRandomPass = function(){
-        var params = {};
-        params.URL = "$url/getrandompass";
-        params.DATA = {},
-        params.METHOD = 'POST';
-        params.DATATYPE = 'json';
-        params.PROCESSDATA = false;
-        params.CONTENTTYPE = false;
-        params.CACHE = false;
-        params.SUCCESS = function(data){
-            $("#$tableName-_password").val(data.password).keyup().blur();
-            $("#$tableName-_passwordconfirm").val(data.password);
-        };
-        params.ERROR = function(data){
-            swal("ERROR", data.message, "error");
-        };
-        AjaxRequest(params);
-    };
-        
-    $(document).ready(function(){
-        $('#btn-getRandomPass').on('click',function(){
-            getRandomPass();
-        });
-    });
-JS;
-$this->registerJs($script, yii\web\View::POS_READY);
-?>

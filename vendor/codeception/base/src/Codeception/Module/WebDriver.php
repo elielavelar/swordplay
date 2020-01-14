@@ -95,10 +95,10 @@ use Symfony\Component\DomCrawler\Crawler;
  *              port: 9515
  *              browser: chrome
  *              capabilities:
- *                  chromeOptions: # additional chrome options
+ *                  "goog:chromeOptions": # additional chrome options
  * ```
  *
- * Additional [Chrome options](https://sites.google.com/a/chromium.org/chromedriver/capabilities) can be set in `chromeOptions` capabilities.
+ * Additional [Chrome options](https://sites.google.com/a/chromium.org/chromedriver/capabilities) can be set in `goog:chromeOptions` capabilities. Note that Selenium 3.8 renamed this capability from `chromeOptions` to `goog:chromeOptions`.
  *
  *
  * ### PhantomJS
@@ -531,7 +531,7 @@ class WebDriver extends CodeceptionModule implements
     /**
      * Print out latest Selenium Logs in debug mode
      *
-     * @param TestInterface $test
+     * @param \Codeception\TestInterface $test
      */
     public function debugWebDriverLogs(TestInterface $test = null)
     {
@@ -822,6 +822,18 @@ class WebDriver extends CodeceptionModule implements
             $urlParts = parse_url($this->config['url']);
             if (isset($urlParts['host'])) {
                 $params['domain'] = $urlParts['host'];
+            }
+        }
+        // #5401 Supply defaults, otherwise chromedriver 2.46 complains.
+        $defaults = [
+            'path' => '/',
+            'expiry' => time() + 86400,
+            'secure' => false,
+            'httpOnly' => false,
+        ];
+        foreach ($defaults as $key => $default) {
+            if (empty($params[$key])) {
+                $params[$key] = $default;
             }
         }
         $this->webDriver->manage()->addCookie($params);
@@ -1446,6 +1458,7 @@ class WebDriver extends CodeceptionModule implements
             $this->setBaseElement();
             $this->initialWindowSize();
         } catch (WebDriverCurlException $e) {
+            codecept_debug('Curl error: ' . $e->getMessage());
             throw new ConnectionException("Can't connect to Webdriver at {$this->wdHost}. Please make sure that Selenium Server or PhantomJS is running.");
         }
     }
@@ -2342,6 +2355,27 @@ class WebDriver extends CodeceptionModule implements
     }
 
     /**
+     * Waits up to $timeout seconds for the given element to be clickable.
+     * If element doesn't become clickable, a timeout exception is thrown.
+     *
+     * ``` php
+     * <?php
+     * $I->waitForElementClickable('#agree_button', 30); // secs
+     * $I->click('#agree_button');
+     * ?>
+     * ```
+     *
+     * @param $element
+     * @param int $timeout seconds
+     * @throws \Exception
+     */
+    public function waitForElementClickable($element, $timeout = 10)
+    {
+        $condition = WebDriverExpectedCondition::elementToBeClickable($this->getLocator($element));
+        $this->webDriver->wait($timeout)->until($condition);
+    }
+
+    /**
      * Waits up to $timeout seconds for the given string to appear on the page.
      *
      * Can also be passed a selector to search in, be as specific as possible when using selectors.
@@ -3075,7 +3109,7 @@ class WebDriver extends CodeceptionModule implements
         }
         
         foreach ($this->sessionSnapshots[$name] as $cookie) {
-            $this->webDriver->manage()->addCookie($cookie);
+            $this->setCookie($cookie['name'], $cookie['value'], (array)$cookie);
         }
         $this->debugSection('Snapshot', "Restored \"$name\" session snapshot");
         return true;
