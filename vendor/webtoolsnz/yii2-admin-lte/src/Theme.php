@@ -24,8 +24,8 @@ class Theme extends \yii\base\Theme
     const SKIN_BLACK = 'skin-black';
     const SKIN_BLACK_LIGHT = 'skin-black-light';
     const SKIN_BLUE = 'skin-blue';
-    const SKIN_BLUE_LIGHT = 'skin-blue-light';
     const SKIN_BLUE_DARK = 'skin-blue-dark';
+    const SKIN_BLUE_LIGHT = 'skin-blue-light';
     const SKIN_GREEN = 'skin-green';
     const SKIN_GREEN_LIGHT = 'skin-green-light';
     const SKIN_YELLOW = 'skin-yellow';

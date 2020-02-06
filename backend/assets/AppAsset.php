@@ -26,7 +26,7 @@ class AppAsset extends AssetBundle
         'yii\bootstrap\BootstrapAsset',
         'omnilight\assets\SweetAlertAsset',
         'backend\assets\FontAwesomeAsset',
-        'backend\assets\FontFoundationAsset',
+        #'backend\assets\FontFoundationAsset',
         #'backend\assets\FontelloAsset',
     ];
 }

@@ -1,6 +1,94 @@
 Change Log: `bootstrap-fileinput`
 =================================
 
+## version 5.0.8
+
+**Date:** 13-Dec-2019
+
+- (enh #1514): Enhancements to duplicate file selection.
+    - New event `fileduplicateerror` will be triggered after every duplicate file detected.
+    - Duplicate error container can be closed by clicking the `close` icon.
+    - New property `fadeDelay` used in fade out / fade in animations of error containers.    
+- (enh #1513): New `filebeforeload` event (only for ajax uploads). Can be used to abort loading of specific files at runtime.
+*Usage:*
+```
+    $('#input').on('filebeforeload', function(event, file, index, reader) {
+        // perform your validations based on the 'file' or other parameters
+        if (file.name === 'UNAPPROVED_FILE.txt') {
+            return false; // will abort the file loading for the selected file
+        }
+    });
+```    
+- (enh #1512): Include parameter to include initial preview files in `getFilesCount` method.
+- (bug #1510): Lock browse button correctly when disable method is called.
+- (bug #1509): Correct zoom slideshow to show only files with zoom enabled via `showZoom`.
+- (bug #1508): Correct file caption after files are uploaded.
+- (enh #1503): Correct Mozilla PDF rendering bug.
+- (bug #1499, #1502): Correct duplicate file check error rendering.
+- (enh #1497): Better validation of progress display when `showPreview` is `false`.
+- (bug #1482): Validate `initialPreviewShowDelete` setting correctly.
+- (bug #1480): Correct preview content setting after validation error.
+ 
+## version 5.0.7
+
+**Date:** 17-Nov-2019
+
+- (enh #1496): Correct isEmpty check for functions.
+- (enh #1485): Update Portugese Brazilian Translations.
+- (enh #1479): Methods updated:
+   - Include `addToStack` method.
+   - Remove `updateStack` method
+   - Rename `clearStack` to `clearFileStack` method
+- (enh #1478): Update Slovak Translations.
+- (enh #1477): Update Czech Translations.
+- (enh #1476): Update Hungarian Translations.
+- (enh #1475): Prevent invalid thumb validation when `showPreview` is `false`.
+- (enh #1474): Hide upload icon for file validation errors.
+- (enh #1471): Improve pt-PT and pt-BR translations.
+- (enh #1468): Update Uzbek Translations.
+- (enh #1467): Update Czekh Translations.
+- (enh #1466): Update Slovak Translations.
+- (bug #1465): Correct content.length parsing issue in preview cache.
+- (enh #1461): Allow two different max file count checks.
+    - `maxFileCount` and `msgFilesTooMany` for files being selected before upload
+    - `maxTotalFileCount` and `msgTotalFilesTooMany` for total files selected and files included in initial preview
+- (enh #1448): New boolean properties `focusCaptionOnBrowse` and `focusCaptionOnClear` which default to `true`.
+  
+## version 5.0.6
+
+**Date:** 11-Sep-2019
+
+- (enh #1464): Correct preview frame float styling issues.
+- (bug #1463): Correct file input unlock after file validation errors (for non-ajax mode).
+- (bug #1460): Correct `filebatchselected` event trigger.
+- (bug #1459): Upload Async does not recognize initialPreview correctly for ajax response immediately sent with uploadUrl.
+- (bug #1457): Correct `removeFromPreviewOnError` validation.
+- (enh #1455): Default preview template to `other` when invalid file type is passed.
+
+## version 5.0.5
+
+**Date:** 23-Aug-2019
+
+- (enh #1450): Update Russian Translations.
+- (enh #1449): Lock file input while files are being read for preview.
+- (enh #1446): New property `showConsoleLogs` to control display of plugin console messages.
+- (enh #1445): Correct invalid thumb frame log errors.
+- (enh #1442): Implement `.npmignore` to clean unwanted files for NPM package.
+- (enh #1438): Activating Open Collective.
+- (enh #1436): Improve Portuguese translations.
+- (enh #1435): Handle special characters in file thumb id attribute.
+- (enh #1429): Enhance thumbnail preview identifiers.
+
+## version 5.0.4
+
+**Date:** 30-Jun-2019
+
+- (enh #1422): Correct drag indicator SCSS.
+- (enh #1420): Correct `preferIconicPreview` parsing.
+- (bug #1413): Correct `getFileStack` and `getFileList` methods.
+- Implement sponsorship.
+- Implement sentiment bot.
+
 ## version 5.0.3
 
 **Date:** 12-May-2019

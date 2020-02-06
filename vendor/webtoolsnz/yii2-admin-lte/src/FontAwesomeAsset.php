@@ -25,15 +25,12 @@ class FontAwesomeAsset extends AssetBundle
      */
     #public $sourcePath = '@vendor/fortawesome/font-awesome';
     public $sourcePath = '@vendor/npm/font-awesome';
-
     /**
      * @var array
      */
-    public $css = [
-        #'css/font-awesome.css'
-        'css/all.min.css'
-    ];
-
+    #public $css = ['css/font-awesome.min.css'];
+    public $css = ['css/all.min.css'];
+    
     /**
      * @var array
      */

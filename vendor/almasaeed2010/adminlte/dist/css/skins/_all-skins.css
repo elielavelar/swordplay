@@ -140,13 +140,12 @@
 .skin-blue.layout-top-nav .main-header > .logo:hover {
   background-color: #3b8ab8;
 }
-
 /*
- * Skin: Blue Dark
+ * Skin: Blue-Dark
  * ----------
  */
 .skin-blue-dark .main-header .navbar {
-  background-color: #3e3f3a;
+  background-color: #3c8dbc;
 }
 .skin-blue-dark .main-header .navbar .nav > li > a {
   color: #ffffff;
@@ -283,9 +282,8 @@
 .skin-blue-dark.layout-top-nav .main-header > .logo:hover {
   background-color: #3b8ab8;
 }
-
 /*
- * Skin: Blue
+ * Skin: Blue-Light
  * ----------
  */
 .skin-blue-light .main-header .navbar {

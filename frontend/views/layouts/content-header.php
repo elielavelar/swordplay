@@ -16,8 +16,8 @@ use webtoolsnz\AdminLte\widgets\FlashMessages;
 
     <?= Breadcrumbs::widget([
         'homeLink' => [
-            'label' => 'Home',
-            'url' => '/' . ($this->context ? $this->context->module->id : null),
+            'label' => 'Inicio',
+            'url' => ($this->context ? Url::home() : null),
         ],
         'links' => isset($this->params['breadcrumbs']) ? $this->params['breadcrumbs'] : [],
     ]) ?>

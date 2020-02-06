@@ -31,7 +31,6 @@
         "moonlandsoft/yii2-phpexcel": "*",
         "trntv/yii2-datetime-widget": "^1.1",
         "webtoolsnz/yii2-admin-lte": "*",
-        "fortawesome/font-awesome": "^4.7",
         "npm-asset/font-awesome" : "~5.1",
         "fedemotta/yii2-widget-datatables": "*",
         "bower-asset/moment": "*",
