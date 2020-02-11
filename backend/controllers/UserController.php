@@ -22,7 +22,7 @@ use Exception;
 class UserController extends CustomController
 {
     public $customactions = [
-        'profile','getrandompass','getfilteruser'
+        'profile','getrandompass','getfilteruser','reloadoptions'
     ];
     
     public function getCustomActions(){
@@ -257,4 +257,5 @@ class UserController extends CustomController
         }
         return $result;
     }
+    
 }

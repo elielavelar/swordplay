@@ -45,8 +45,8 @@ $formName = $tableName.'-form';
             <div class="row">
                 <div class="col-md-12">
                     <div class="pull-right">
-                        <?= Html::submitButton('Actualizar', ['class' =>'btn btn-primary']) ?>
-                        <?= Html::a('Cancelar', ['index'] ,['class' => 'btn btn-danger']) ?>
+                        <?= Html::submitButton('<i class="fas fa-save"></i> Guardar', ['class' =>'btn btn-success']) ?>
+                        <?= Html::a('<i class="fas fa-times"></i> Cancelar', ['index'] ,['class' => 'btn btn-danger']) ?>
                     </div>
                 </div>
             </div>

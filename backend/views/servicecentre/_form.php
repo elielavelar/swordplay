@@ -22,9 +22,6 @@ use yii\web\JsExpression;
         </div>
         <div class="row">
             <div class="col-md-4">
-                <?= $form->field($model, 'MBCode')->textInput(['autocomplete'=>'off']) ?>
-            </div>
-            <div class="col-md-4">
                 <?= $form->field($model, 'IdState')->dropDownList($model->getStates()) ?>
             </div>
             <div class="col-md-4">
@@ -50,11 +47,6 @@ use yii\web\JsExpression;
             </div>
             <div class="col-md-4">
                 <?= $form->field($model, 'IdZone')->dropDownList($model->getZones(),[]); ?>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-4">
-                <?= $form->field($model, 'Phone')->textInput(['maxlength' => true, 'autocomplete'=>'off']) ?>
             </div>
         </div>
         <div class="row">

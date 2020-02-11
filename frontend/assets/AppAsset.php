@@ -13,8 +13,6 @@ class AppAsset extends AssetBundle
     public $baseUrl = '@web';
     public $sourcePath = '@app/assets/bootstrap3/';
     public $css = [
-        #'css/site.css',
-        #'css/bootstrapMB.css',
         'css/custom.css',
         'css/docs.min.css',
     ];
@@ -26,8 +24,7 @@ class AppAsset extends AssetBundle
         'yii\bootstrap\BootstrapAsset',
         'omnilight\assets\SweetAlertAsset',
         'frontend\assets\FontAwesomeAsset',
-        'frontend\assets\FontFoundationAsset',
-        #'frontend\assets\FontelloAsset',
+        'webtoolsnz\AdminLte\AdminLteAsset',
         'frontend\assets\MomentAsset',
         'frontend\assets\MomentTimerAsset',
     ];

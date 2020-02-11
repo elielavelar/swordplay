@@ -27,9 +27,9 @@ $this->params['breadcrumbs'][] = 'Actualizar';
                         'active' => true
                     ],
                     [
-                        'label' => 'Configuración de Citas Ciudadano ',
-                        'content' => $this->render('_form/_detail',['model'=>$model, 'searchModel'=>$searchDetail, 'dataProvider'=>$dataProvider,'modelDetail'=>$modelDetail,]),
-                        'visible' => in_array($model->type->Code, [Servicecentres::TYPE_DUISITE]),
+                        'label' => 'Ministerios',
+                        'content' => $this->render('_form/_detail',['model'=>$model, 'searchModel'=>$searchModel, 'dataProvider'=>$dataProvider,'modelDetail'=>$modelDetail,]),
+                        #'visible' => in_array($model->type->Code, [Servicecentres::TYPE_DUISITE]),
                     ],
                 ]]);
          ?>
@@ -37,8 +37,8 @@ $this->params['breadcrumbs'][] = 'Actualizar';
             <div class="row">
                 <div class="col-md-12">
                     <span class="pull-right">
-                        <?= Html::submitButton('Actualizar', ['class' =>'btn btn-primary']) ?>
-                        <?= Html::a('Cancelar', ['index'] ,['class' => 'btn btn-danger']) ?>
+                        <?= Html::submitButton('<i class="fas fa-save"></i> Guardar', ['class' =>'btn btn-success']) ?>
+                        <?= Html::a('<i class="fas fa-times"></i> Cancelar', ['index'] ,['class' => 'btn btn-danger']) ?>
                     </span>
                 </div>
             </div>

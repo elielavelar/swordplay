@@ -3,6 +3,7 @@
 namespace common\models;
 
 use Yii;
+use common\models\State;
 use yii\helpers\ArrayHelper;
 use yii\helpers\StringHelper;
 use Exception;
@@ -40,8 +41,8 @@ class Extendedmodels extends \yii\db\ActiveRecord
             [['IdState'], 'integer'],
             [['Description'], 'string'],
             [['Name', 'KeyWord', 'AttributeKeyName'], 'string', 'max' => 100],
-            [['KeyWord'], 'unique'],
-            [['IdState'], 'exist', 'skipOnError' => true, 'targetClass' => State::className(), 'targetAttribute' => ['IdState' => 'id']],
+            [['AttributeKeyName'], 'unique', 'targetAttribute' => ['KeyWord', 'AttributeKeyName'], 'message' => 'Ya existe el Campo {value} para la llave ingresada'],
+            [['IdState'], 'exist', 'skipOnError' => true, 'targetClass' => State::className(), 'targetAttribute' => ['IdState' => 'Id']],
         ];
     }
 
@@ -52,11 +53,11 @@ class Extendedmodels extends \yii\db\ActiveRecord
     {
         return [
             'Id' => 'ID',
-            'Name' => 'Name',
-            'KeyWord' => 'Key Word',
-            'AttributeKeyName' => 'Attribute Key Name',
-            'IdState' => 'Id State',
-            'Description' => 'Description',
+            'Name' => 'Nombre',
+            'KeyWord' => 'Llave',
+            'AttributeKeyName' => 'Atributo Clave',
+            'IdState' => 'Estado',
+            'Description' => 'Descripción',
         ];
     }
 
@@ -65,7 +66,7 @@ class Extendedmodels extends \yii\db\ActiveRecord
      */
     public function getExtendedmodelfields()
     {
-        return $this->hasMany(Extendedmodelfields::className(), ['IdExtendedModel' => 'id']);
+        return $this->hasMany(Extendedmodelfields::className(), ['IdExtendedModel' => 'Id']);
     }
 
     /**
@@ -73,6 +74,11 @@ class Extendedmodels extends \yii\db\ActiveRecord
      */
     public function getState()
     {
-        return $this->hasOne(State::className(), ['id' => 'IdState']);
+        return $this->hasOne(State::className(), ['Id' => 'IdState']);
+    }
+
+    public function getStates(){
+        $options = State::findAll(['KeyWord' => StringHelper::basename(self::class)]);
+        return ArrayHelper::map($options, 'Id', 'Name');
     }
 }

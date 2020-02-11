@@ -6,7 +6,8 @@ use Yii;
 use common\models\Servicecentres;
 use backend\models\ServicecentresSearch;
 use backend\models\Settingsdetail;
-
+use backend\models\MinistryservicecentresSearch;
+use backend\models\Ministryservicecentres;
 use yii\web\Controller;
 use backend\controllers\CustomController;
 use yii\web\NotFoundHttpException;
@@ -98,19 +99,27 @@ class ServicecentreController extends CustomController
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
+        
+        $modelDetail = new Ministryservicecentres();
+        $modelDetail->IdServiceCentre = $model->Id;
+        
+        $searchModel = new MinistryservicecentresSearch();
+        $searchModel->IdServiceCentre = $model->Id;
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+        
         if ($model->load(Yii::$app->request->post())) {
             $post = Yii::$app->request->post(StringHelper::basename(Servicecentres::className()));
             if($model->save()){
                 return $this->redirect(['view', 'id' => $model->Id]);
             } else {
                 return $this->render('update', [
-                    'model' => $model
+                    'model' => $model, 'searchModel' => $searchModel, 'modelDetail' => $modelDetail, 'dataProvider' => $dataProvider
                 ]);
             }
             
         } else {
             return $this->render('update', [
-                'model' => $model
+                'model' => $model, 'searchModel' => $searchModel, 'modelDetail' => $modelDetail, 'dataProvider' => $dataProvider
             ]);
         }
     }
