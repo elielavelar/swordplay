@@ -4,11 +4,11 @@ use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 
 /* @var $this yii\web\View */
-/* @var $model backend\models\ExtendedmodelSearch */
+/* @var $model backend\models\ExtendedmodelrecordSearch */
 /* @var $form yii\widgets\ActiveForm */
 ?>
 
-<div class="extendedmodels-search">
+<div class="extendedmodelrecords-search">
 
     <?php $form = ActiveForm::begin([
         'action' => ['index'],
@@ -17,15 +17,9 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'Id') ?>
 
-    <?= $form->field($model, 'Name') ?>
+    <?= $form->field($model, 'IdExtendedModelKey') ?>
 
-    <?= $form->field($model, 'KeyWord') ?>
-
-    <?= $form->field($model, 'IdNameSpace') ?>
-
-    <?= $form->field($model, 'IdState') ?>
-
-    <?php // echo $form->field($model, 'Description') ?>
+    <?= $form->field($model, 'AttributeKeyValue') ?>
 
     <div class="form-group">
         <?= Html::submitButton('Search', ['class' => 'btn btn-primary']) ?>

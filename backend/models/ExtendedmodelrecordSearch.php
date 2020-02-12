@@ -5,12 +5,12 @@ namespace backend\models;
 use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use common\models\Extendedmodels;
+use common\models\Extendedmodelrecords;
 
 /**
- * ExtendedmodelSearch represents the model behind the search form of `common\models\Extendedmodels`.
+ * ExtendedmodelrecordSearch represents the model behind the search form of `common\models\Extendedmodelrecords`.
  */
-class ExtendedmodelSearch extends Extendedmodels
+class ExtendedmodelrecordSearch extends Extendedmodelrecords
 {
     /**
      * {@inheritdoc}
@@ -18,8 +18,8 @@ class ExtendedmodelSearch extends Extendedmodels
     public function rules()
     {
         return [
-            [['Id', 'IdNameSpace', 'IdState'], 'integer'],
-            [['Name', 'KeyWord', 'Description'], 'safe'],
+            [['Id', 'IdExtendedModelKey'], 'integer'],
+            [['AttributeKeyValue'], 'safe'],
         ];
     }
 
@@ -41,7 +41,7 @@ class ExtendedmodelSearch extends Extendedmodels
      */
     public function search($params)
     {
-        $query = Extendedmodels::find();
+        $query = Extendedmodelrecords::find();
 
         // add conditions that should always apply here
 
@@ -60,13 +60,10 @@ class ExtendedmodelSearch extends Extendedmodels
         // grid filtering conditions
         $query->andFilterWhere([
             'Id' => $this->Id,
-            'IdNameSpace' => $this->IdNameSpace,
-            'IdState' => $this->IdState,
+            'IdExtendedModelKey' => $this->IdExtendedModelKey,
         ]);
 
-        $query->andFilterWhere(['like', 'Name', $this->Name])
-            ->andFilterWhere(['like', 'KeyWord', $this->KeyWord])
-            ->andFilterWhere(['like', 'Description', $this->Description]);
+        $query->andFilterWhere(['like', 'AttributeKeyValue', $this->AttributeKeyValue]);
 
         return $dataProvider;
     }

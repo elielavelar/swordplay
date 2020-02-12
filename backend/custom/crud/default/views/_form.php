@@ -38,9 +38,10 @@ use yii\widgets\ActiveForm;
 </div>
 <div class="panel-footer">
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-12">
             <span class="pull-right">
-                <?= "<?= " ?>Html::submitButton(<?= $generator->generateString('Save') ?>, ['class' => 'btn btn-success']) ?>
+                <?= "<?= " ?>Html::submitButton(<?= $generator->generateString('<i class="fas fa-save"></i> Guardar') ?>, ['class' => 'btn btn-success']) ?>
+                <?= "<?= " ?>Html::a(<?= $generator->generateString('<i class="fas fa-times"></i> Cancelar') ?>,['index'] , ['class' => 'btn btn-danger']) ?>
             </span>
         </div>
     </div>

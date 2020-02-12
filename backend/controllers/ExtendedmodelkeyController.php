@@ -3,8 +3,6 @@
 namespace backend\controllers;
 
 use Yii;
-use common\models\Extendedmodels;
-use backend\models\ExtendedmodelSearch;
 use common\models\Extendedmodelkeys;
 use backend\models\ExtendedmodelkeySearch;
 use yii\web\Controller;
@@ -17,9 +15,9 @@ use yii\helpers\Json;
 use Exception;
 
 /**
- * ExtendedmodelController implements the CRUD actions for Extendedmodels model.
+ * ExtendedmodelkeyController implements the CRUD actions for Extendedmodelkeys model.
  */
-class ExtendedmodelController extends Controller
+class ExtendedmodelkeyController extends Controller
 {
     /**
      * {@inheritdoc}
@@ -37,24 +35,22 @@ class ExtendedmodelController extends Controller
     }
 
     /**
-     * Lists all Extendedmodels models.
+     * Lists all Extendedmodelkeys models.
      * @return mixed
      */
     public function actionIndex()
     {
-        $searchModel = new ExtendedmodelSearch();
+        $searchModel = new ExtendedmodelkeySearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
-        $model = new Extendedmodels();
 
         return $this->render('index', [
-            'model' => $model,
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
         ]);
     }
 
     /**
-     * Displays a single Extendedmodels model.
+     * Displays a single Extendedmodelkeys model.
      * @param integer $id
      * @return mixed
      * @throws NotFoundHttpException if the model cannot be found
@@ -67,13 +63,13 @@ class ExtendedmodelController extends Controller
     }
 
     /**
-     * Creates a new Extendedmodels model.
+     * Creates a new Extendedmodelkeys model.
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
      */
     public function actionCreate()
     {
-        $model = new Extendedmodels();
+        $model = new Extendedmodelkeys();
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->Id]);
@@ -85,7 +81,7 @@ class ExtendedmodelController extends Controller
     }
 
     /**
-     * Updates an existing Extendedmodels model.
+     * Updates an existing Extendedmodelkeys model.
      * If update is successful, the browser will be redirected to the 'view' page.
      * @param integer $id
      * @return mixed
@@ -94,11 +90,6 @@ class ExtendedmodelController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
-        $modelDetail = new Extendedmodelkeys();
-        $modelDetail->IdExtendedModel = $model->Id;
-        $searchModel = new ExtendedmodelkeySearch();
-        $searchModel->IdExtendedModel = $model->Id;
-        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->Id]);
@@ -106,14 +97,11 @@ class ExtendedmodelController extends Controller
 
         return $this->render('update', [
             'model' => $model,
-            'modelDetail' => $modelDetail,
-            'searchModel' => $searchModel,
-            'dataProvider' => $dataProvider,
         ]);
     }
 
     /**
-     * Deletes an existing Extendedmodels model.
+     * Deletes an existing Extendedmodelkeys model.
      * If deletion is successful, the browser will be redirected to the 'index' page.
      * @param integer $id
      * @return mixed
@@ -127,15 +115,15 @@ class ExtendedmodelController extends Controller
     }
 
     /**
-     * Finds the Extendedmodels model based on its primary key value.
+     * Finds the Extendedmodelkeys model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
      * @param integer $id
-     * @return Extendedmodels the loaded model
+     * @return Extendedmodelkeys the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
     protected function findModel($id)
     {
-        if (($model = Extendedmodels::findOne($id)) !== null) {
+        if (($model = Extendedmodelkeys::findOne($id)) !== null) {
             return $model;
         }
 
@@ -145,12 +133,12 @@ class ExtendedmodelController extends Controller
     public function actionGet(){
         $response = [];
         \Yii::$app->response->format = Response::FORMAT_JSON;
-        $model = new Extendedmodels();
+        $model = new Extendedmodelkeys();
         try {
             if(\Yii::$app->request->isAjax){
                 $data = \Yii::$app->request->post('data');
                 $criteria = Json::decode($data, TRUE);
-                $model = Extendedmodels::findOne($criteria);
+                $model = Extendedmodelkeys::findOne($criteria);
                 $response = array_merge(['success'=>true],$model->attributes);
             }
         } catch (Exception $exc) {
@@ -160,25 +148,6 @@ class ExtendedmodelController extends Controller
                 'code'=>$exc->getCode(),
                 'errors' => $model->errors,
             ];
-        }
-        return $response;
-    }
-    
-    public function actionGetmodels(){
-        $response = [
-            'results'=> ['id'=> '','text'=> '']
-        ];
-        \Yii::$app->response->format = Response::FORMAT_JSON;
-        $model = new Extendedmodels();
-        try {
-            if(\Yii::$app->request->isAjax){
-                $data = \Yii::$app->request->get();
-                $model->attributes = $data;
-                $model->term = $data['q'];
-                $response = $model->getModels();
-            }
-        } catch (Exception $exc) {
-            print_r($exc->getMessage());
         }
         return $response;
     }

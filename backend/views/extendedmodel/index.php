@@ -33,7 +33,13 @@ $this->params['breadcrumbs'][] = $this->title;
                             ['class' => 'yii\grid\SerialColumn'],
                             'Name',
                             'KeyWord',
-                            'AttributeKeyName',
+                            [
+                                'attribute' => 'IdNameSpace',
+                                'content' => function($model){
+                                    return $model->IdNameSpace ? $model->nameSpace->Name : '';
+                                },
+                                'filter' => $model->getNameSpaces(),
+                            ],
                             [
                                 'attribute' => 'IdState',
                                 'content' => function($model){

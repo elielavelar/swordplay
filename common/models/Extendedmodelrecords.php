@@ -11,11 +11,12 @@ use Exception;
  * This is the model class for table "extendedmodelrecords".
  *
  * @property int $Id
- * @property int $IdExtendedModel
+ * @property int $IdExtendedModelKey
  * @property string $AttributeKeyValue
  *
  * @property Extendedmodelfieldvalues[] $extendedmodelfieldvalues
  * @property Extendedmodelfields[] $extendedModelFields
+ * @property Extendedmodelkeys $extendedModelKey
  */
 class Extendedmodelrecords extends \yii\db\ActiveRecord
 {
@@ -33,10 +34,11 @@ class Extendedmodelrecords extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['IdExtendedModel', 'AttributeKeyValue'], 'required'],
-            [['IdExtendedModel'], 'integer'],
+            [['IdExtendedModelKey'], 'required'],
+            [['IdExtendedModelKey'], 'integer'],
             [['AttributeKeyValue'], 'string', 'max' => 100],
-            [['IdExtendedModel', 'AttributeKeyValue'], 'unique', 'targetAttribute' => ['IdExtendedModel', 'AttributeKeyValue']],
+            [['IdExtendedModelKey', 'AttributeKeyValue'], 'unique', 'targetAttribute' => ['IdExtendedModelKey', 'AttributeKeyValue']],
+            [['IdExtendedModelKey'], 'exist', 'skipOnError' => true, 'targetClass' => Extendedmodelkeys::className(), 'targetAttribute' => ['IdExtendedModelKey' => 'id']],
         ];
     }
 
@@ -47,7 +49,7 @@ class Extendedmodelrecords extends \yii\db\ActiveRecord
     {
         return [
             'Id' => 'ID',
-            'IdExtendedModel' => 'Id Extended Model',
+            'IdExtendedModelKey' => 'Id Extended Model Key',
             'AttributeKeyValue' => 'Attribute Key Value',
         ];
     }
@@ -66,5 +68,13 @@ class Extendedmodelrecords extends \yii\db\ActiveRecord
     public function getExtendedModelFields()
     {
         return $this->hasMany(Extendedmodelfields::className(), ['id' => 'IdExtendedModelField'])->viaTable('extendedmodelfieldvalues', ['IdExtendedModelRecord' => 'id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getExtendedModelKey()
+    {
+        return $this->hasOne(Extendedmodelkeys::className(), ['id' => 'IdExtendedModelKey']);
     }
 }

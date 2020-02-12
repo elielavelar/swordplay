@@ -4,14 +4,13 @@ use yii\helpers\Html;
 
 
 /* @var $this yii\web\View */
-/* @var $model common\models\Extendedmodels */
+/* @var $model common\models\Extendedmodelkeys */
 
-$this->title = 'Agregar Modelo Extendido';
-$this->params['breadcrumbs'][] = 'Configuraciones';
-$this->params['breadcrumbs'][] = ['label' => 'Modelos Extendidos', 'url' => ['index']];
+$this->title = 'Agregar Extendedmodelkeys';
+$this->params['breadcrumbs'][] = ['label' => 'Extendedmodelkeys', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="extendedmodels-create">
+<div class="extendedmodelkeys-create">
     <div class="panel panel-primary">
         <div class="panel-heading">
             <h4 class="panel-title"><?= Html::encode($this->title) ?></h4>

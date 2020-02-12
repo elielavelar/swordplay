@@ -3,7 +3,7 @@
 namespace common\models;
 
 use Yii;
-use common\models\State;
+use backend\models\Settingsdetail;
 use yii\helpers\ArrayHelper;
 use yii\helpers\StringHelper;
 use Exception;
@@ -14,15 +14,19 @@ use Exception;
  * @property int $Id
  * @property string $Name
  * @property string $KeyWord
- * @property string $AttributeKeyName
+ * @property int $IdNameSpace
  * @property int $IdState
  * @property string $Description
  *
- * @property Extendedmodelfields[] $extendedmodelfields
+ * @property Extendedmodelkeys[] $extendedmodelkeys
+ * @property Settingsdetail $nameSpace
  * @property State $state
  */
 class Extendedmodels extends \yii\db\ActiveRecord
 {
+    const _NAMESPACE_ = 'NameSpace';
+    const _NAMESPACE_CODE_ = 'NESP';
+    public $term = '';
     /**
      * {@inheritdoc}
      */
@@ -37,11 +41,12 @@ class Extendedmodels extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['Name', 'KeyWord', 'AttributeKeyName', 'IdState'], 'required'],
-            [['IdState'], 'integer'],
+            [['Name', 'KeyWord', 'IdNameSpace', 'IdState'], 'required'],
+            [['IdNameSpace', 'IdState'], 'integer'],
             [['Description'], 'string'],
-            [['Name', 'KeyWord', 'AttributeKeyName'], 'string', 'max' => 100],
-            [['AttributeKeyName'], 'unique', 'targetAttribute' => ['KeyWord', 'AttributeKeyName'], 'message' => 'Ya existe el Campo {value} para la llave ingresada'],
+            [['Name', 'KeyWord'], 'string', 'max' => 100],
+            [['KeyWord'], 'unique'],
+            [['IdNameSpace'], 'exist', 'skipOnError' => true, 'targetClass' => Settingsdetail::className(), 'targetAttribute' => ['IdNameSpace' => 'id']],
             [['IdState'], 'exist', 'skipOnError' => true, 'targetClass' => State::className(), 'targetAttribute' => ['IdState' => 'Id']],
         ];
     }
@@ -55,7 +60,7 @@ class Extendedmodels extends \yii\db\ActiveRecord
             'Id' => 'ID',
             'Name' => 'Nombre',
             'KeyWord' => 'Llave',
-            'AttributeKeyName' => 'Atributo Clave',
+            'IdNameSpace' => 'Espacio de Nombre',
             'IdState' => 'Estado',
             'Description' => 'Descripción',
         ];
@@ -64,9 +69,29 @@ class Extendedmodels extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getExtendedmodelfields()
+    public function getExtendedmodelkeys()
     {
-        return $this->hasMany(Extendedmodelfields::className(), ['IdExtendedModel' => 'Id']);
+        return $this->hasMany(Extendedmodelkeys::className(), ['IdExtendedModel' => 'Id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getNameSpace()
+    {
+        return $this->hasOne(Settingsdetail::className(), ['Id' => 'IdNameSpace']);
+    }
+    
+    public function getNameSpaces(){
+        $settings = Settingsdetail::find()
+                ->joinWith('setting b')
+                ->where([
+                    'b.KeyWord' => self::_NAMESPACE_,
+                    'b.Code' => self::_NAMESPACE_CODE_
+                ])
+                ->orderBy(['settingsdetail.Sort' => SORT_ASC])
+                ->all();
+        return ArrayHelper::map($settings, 'Id', 'Name');
     }
 
     /**
@@ -76,9 +101,26 @@ class Extendedmodels extends \yii\db\ActiveRecord
     {
         return $this->hasOne(State::className(), ['Id' => 'IdState']);
     }
-
+    
     public function getStates(){
         $options = State::findAll(['KeyWord' => StringHelper::basename(self::class)]);
         return ArrayHelper::map($options, 'Id', 'Name');
+    }
+    
+    public function getModels(){
+        try {
+            $nameSpace = Settingsdetail::findOne(['Id' => $this->IdNameSpace]);
+            $path = Yii::getAlias('@'.$nameSpace->Value);
+            $files = glob($path.'/models/*'.$this->term.'*.php');
+            $result = [];
+            foreach ($files as $i => $file){
+                $filename = str_replace(".php", "", $file);
+                $basename = StringHelper::basename($filename);
+                $result[] = ['id' => $basename, 'text' =>$basename];
+            }
+            return ['results' => $result];
+        } catch (Exception $ex) {
+            throw $ex;
+        }
     }
 }

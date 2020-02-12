@@ -11,7 +11,7 @@ use Exception;
  * This is the model class for table "extendedmodelfields".
  *
  * @property int $Id
- * @property int $IdExtendedModel
+ * @property int $IdExtendedModelKey
  * @property int $IdField
  * @property string $CustomLabel
  * @property int $Required
@@ -21,7 +21,7 @@ use Exception;
  * @property int $RowSpan
  * @property string $Description
  *
- * @property Extendedmodels $extendedModel
+ * @property Extendedmodelkeys $extendedModelKey
  * @property Fields $field
  * @property Extendedmodelfieldvalues[] $extendedmodelfieldvalues
  * @property Extendedmodelrecords[] $extendedModelRecords
@@ -42,11 +42,11 @@ class Extendedmodelfields extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['IdExtendedModel', 'IdField'], 'required'],
-            [['IdExtendedModel', 'IdField', 'Required', 'Sort', 'ColSpan', 'RowSpan'], 'integer'],
+            [['IdExtendedModelKey', 'IdField'], 'required'],
+            [['IdExtendedModelKey', 'IdField', 'Required', 'Sort', 'ColSpan', 'RowSpan'], 'integer'],
             [['Description'], 'string'],
             [['CustomLabel', 'CssClass'], 'string', 'max' => 100],
-            [['IdExtendedModel'], 'exist', 'skipOnError' => true, 'targetClass' => Extendedmodels::className(), 'targetAttribute' => ['IdExtendedModel' => 'id']],
+            [['IdExtendedModelKey'], 'exist', 'skipOnError' => true, 'targetClass' => Extendedmodelkeys::className(), 'targetAttribute' => ['IdExtendedModelKey' => 'id']],
             [['IdField'], 'exist', 'skipOnError' => true, 'targetClass' => Fields::className(), 'targetAttribute' => ['IdField' => 'id']],
         ];
     }
@@ -58,7 +58,7 @@ class Extendedmodelfields extends \yii\db\ActiveRecord
     {
         return [
             'Id' => 'ID',
-            'IdExtendedModel' => 'Id Extended Model',
+            'IdExtendedModelKey' => 'Id Extended Model Key',
             'IdField' => 'Id Field',
             'CustomLabel' => 'Custom Label',
             'Required' => 'Required',
@@ -73,9 +73,9 @@ class Extendedmodelfields extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getExtendedModel()
+    public function getExtendedModelKey()
     {
-        return $this->hasOne(Extendedmodels::className(), ['id' => 'IdExtendedModel']);
+        return $this->hasOne(Extendedmodelkeys::className(), ['id' => 'IdExtendedModelKey']);
     }
 
     /**
