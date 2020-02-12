@@ -111,7 +111,8 @@ class Extendedmodels extends \yii\db\ActiveRecord
         try {
             $nameSpace = Settingsdetail::findOne(['Id' => $this->IdNameSpace]);
             $path = Yii::getAlias('@'.$nameSpace->Value);
-            $files = glob($path.'/models/*'.$this->term.'*.php');
+            $this->term = empty($this->term) ? '': $this->term.'*';
+            $files = glob($path.'/models/*'.$this->term.'.php');
             $result = [];
             foreach ($files as $i => $file){
                 $filename = str_replace(".php", "", $file);
