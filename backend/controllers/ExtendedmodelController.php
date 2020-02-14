@@ -94,6 +94,7 @@ class ExtendedmodelController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
+        
         $modelDetail = new Extendedmodelkeys();
         $modelDetail->IdExtendedModel = $model->Id;
         $searchModel = new ExtendedmodelkeySearch();

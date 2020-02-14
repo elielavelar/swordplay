@@ -11,24 +11,27 @@ use yii\helpers\ArrayHelper;
  * and open the template in the editor.
  */
 /* @var $this yii\web\View */
-/* @var $model \common\models\Extendedmodels */
-/* @var $searchModel backend\models\ExtendedmodelkeySearch; */
-/* @var $modelDetail common\models\Extendedmodelkeys */
+/* @var $model \common\models\Extendedmodelkeys */
+/* @var $searchModel backend\models\ExtendedmodelfieldSearch; */
+/* @var $modelDetail common\models\Extendedmodelfields */
 /* @var $dataProvider yii\data\ActiveDataProvider  */
 
 $tableName = $modelDetail->tableName();
 $frmName = 'form-'.$tableName;
 $modalName = 'modal-'.$tableName;
 
-$template = "";
-$template .= Yii::$app->customFunctions->userCan("catalogView") ? "{view} ":"";
-$template .= Yii::$app->customFunctions->userCan("catalogUpdate") ? "{edit} {update} ":"";
-$template .= Yii::$app->customFunctions->userCan("catalogDelete") ? " |&nbsp;&nbsp;&nbsp;&nbsp;{delete} ":"";
-$controller = Yii::$app->controller->id;
+$controller = 'extendedmodel';
+$view = Yii::$app->customFunctions->userCan($controller."View");
+$update = Yii::$app->customFunctions->userCan($controller."Update");
+$delete = $update;
 
-$filterAttributes = $model->getModelAttributes();
-$filterState = $modelDetail->getStates();
-$url = Yii::$app->getUrlManager()->createUrl($controller.'key');
+$template = "";
+$template .= $view ? "{view} ":"";
+$template .= $update ? "{edit} {update} ":"";
+$template .= $delete ? " |&nbsp;&nbsp;&nbsp;&nbsp;{delete} ":"";
+
+$filterFields = $modelDetail->getFields();
+$url = Yii::$app->getUrlManager()->createUrl($controller.'field');
 
 ?>
 
@@ -38,7 +41,7 @@ $url = Yii::$app->getUrlManager()->createUrl($controller.'key');
             <div class="col-md-12">
                 <span class="pull-right">
                     <?= Yii::$app->customFunctions->userCan($controller.'Update') ? 
-                        Html::button("<i class='fas fa-plus'></i> Agregar Llave", ['class'=>'btn btn-success','id'=>'btnAddDetail'])
+                        Html::button("<i class='fas fa-plus'></i> Agregar Campo", ['class'=>'btn btn-success','id'=>'btnAddDetail'])
                         :"";
                     ?>
                 </span>
@@ -57,22 +60,40 @@ $url = Yii::$app->getUrlManager()->createUrl($controller.'key');
                 'columns' => [
                     ['class' => 'yii\grid\SerialColumn'],
                     [
-                        'attribute' => 'AttributeKeyName',
-                        'filter' => $filterAttributes,
-                        'content' => function($model){
-                            return (($model->AttributeKeyName && $model->IdExtendedModel ) ? $model->extendedModel->getModelAttributeLabel($model->AttributeKeyName):"");
-                        },
+                        'attribute' => 'Sort',
+                        'headerOptions' => [
+                            'width' => '5%'
+                        ],
                     ],
-                    'AttributeKeyValue',
                     [
-                        'attribute'=>'IdState',
-                        'filter'=> Html::activeDropDownList($searchModel, 'IdState', $filterState, ['class'=>'form-control','prompt'=>'--']),
-                        'content'=>function($data){
-                            return $data->IdState != 0 ? $data->state->Name:NULL;
+                        'attribute' => 'IdField',
+                        'filter' => $filterFields,
+                        'content' => function($model){
+                            return $model->IdField ? $model->field->Name: '';
                         },
-                        'enableSorting'=>TRUE  
+                        'headerOptions' => [
+                            'width' => '25%'
+                        ],
                     ],
-                    'Description',
+                    [
+                        'attribute' => 'CustomLabel',
+                        'headerOptions' => [
+                            'width' => '25%'
+                        ],
+                    ],
+                    [
+                        'attribute' => 'Required',
+                        'content' => function($model){
+                            return $model->Required == 1 ? 'Sí':'No';
+                        },
+                        'filter' => ['0' => 'NO', '1' => 'SI'],
+                        'headerOptions' => [
+                            'width' => '8%'
+                        ],
+                    ],
+                    'CssClass',
+                    'ColSpan',
+                    'RowSpan',
                     [
                         'class' => 'yii\grid\ActionColumn',
                         'template' => $template,

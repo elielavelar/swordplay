@@ -5,6 +5,8 @@ namespace backend\controllers;
 use Yii;
 use common\models\Extendedmodelkeys;
 use backend\models\ExtendedmodelkeySearch;
+use common\models\Extendedmodelfields;
+use backend\models\ExtendedmodelfieldSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -63,24 +65,6 @@ class ExtendedmodelkeyController extends Controller
     }
 
     /**
-     * Creates a new Extendedmodelkeys model.
-     * If creation is successful, the browser will be redirected to the 'view' page.
-     * @return mixed
-     */
-    public function actionCreate()
-    {
-        $model = new Extendedmodelkeys();
-
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->Id]);
-        }
-
-        return $this->render('create', [
-            'model' => $model,
-        ]);
-    }
-
-    /**
      * Updates an existing Extendedmodelkeys model.
      * If update is successful, the browser will be redirected to the 'view' page.
      * @param integer $id
@@ -90,6 +74,12 @@ class ExtendedmodelkeyController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
+        
+        $modelDetail = new Extendedmodelfields();
+        $modelDetail->IdExtendedModelKey = $model->Id;
+        $searchModel = new ExtendedmodelfieldSearch();
+        $searchModel->IdExtendedModelKey = $model->Id;
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->Id]);
@@ -97,6 +87,9 @@ class ExtendedmodelkeyController extends Controller
 
         return $this->render('update', [
             'model' => $model,
+            'modelDetail' => $modelDetail,
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
         ]);
     }
 
@@ -107,11 +100,35 @@ class ExtendedmodelkeyController extends Controller
      * @return mixed
      * @throws NotFoundHttpException if the model cannot be found
      */
+    
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
-
-        return $this->redirect(['index']);
+        $response = [];
+        \Yii::$app->response->format = Response::FORMAT_JSON;
+        try {
+            $model = $this->findModel($id);
+            $title = 'Llave';
+            $name = $model->AttributeKeyName;
+            $dttitle = 'Eliminada';
+            if($model->delete()){
+                $response = [
+                    'success'=>TRUE,
+                    'message'=>$title.' '.$name.' '.$dttitle,
+                    'title'=>$title.' '.$dttitle,
+                ];
+            } else {
+                $message = Yii::$app->customFunctions->getErrors($model->errors);
+                throw new Exception($message, 90003);
+            }
+        } catch (Exception $ex){
+            $response = [
+                'success'=>FALSE,
+                'code'=>$ex->getCode(),
+                'message'=>$ex->getMessage(),
+                'errors'=>$model->errors,
+            ];
+        }
+        return $response;
     }
 
     /**
@@ -147,6 +164,43 @@ class ExtendedmodelkeyController extends Controller
                 'message'=>$exc->getMessage(),
                 'code'=>$exc->getCode(),
                 'errors' => $model->errors,
+            ];
+        }
+        return $response;
+    }
+    
+    
+    public function actionSave(){
+        $model = new Extendedmodelkeys();
+        $response = [];
+        \Yii::$app->response->format = Response::FORMAT_JSON;
+        try {
+            if (Yii::$app->request->isAjax) {
+                $data = Yii::$app->request->post(StringHelper::basename(Extendedmodelkeys::class));
+                $dttitle = 'Agregada';
+                if(!empty($data['Id'])){
+                    $model = $this->findModel($data['Id']);
+                    $dttitle = 'Actualizada';
+                    if($model == NULL){
+                        throw new Exception('No se encontró registro', 90001);
+                    }
+                } 
+                $model->attributes = $data;
+                if($model->save()){
+                    $model->refresh();
+                    $title = 'Llave';
+                    $response = array_merge(['success'=>true,'title'=>$title.' '.$dttitle],$model->attributes);
+                } else {
+                    $message = Yii::$app->customFunctions->getErrors($model->errors);
+                    throw new Exception($message, 90002);
+                }
+            }
+        } catch (Exception $ex) {
+            $response = [
+                'success'=>FALSE,
+                'code'=>$ex->getCode(),
+                'message'=>$ex->getMessage(),
+                'errors'=>$model->errors,
             ];
         }
         return $response;

@@ -30,6 +30,9 @@ use Exception;
  */
 class Fields extends \yii\db\ActiveRecord
 {
+    
+    const STATUS_ACTIVE = 'ACT';
+    const STATUS_INACTIVE = 'INA';
     /**
      * {@inheritdoc}
      */

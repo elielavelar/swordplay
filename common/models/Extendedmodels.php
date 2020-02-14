@@ -27,6 +27,9 @@ class Extendedmodels extends \yii\db\ActiveRecord
     const _NAMESPACE_ = 'NameSpace';
     const _NAMESPACE_CODE_ = 'NESP';
     public $term = '';
+    private $namespacePath = null;
+    private $path = null;
+    private $model = null;
     /**
      * {@inheritdoc}
      */
@@ -102,6 +105,9 @@ class Extendedmodels extends \yii\db\ActiveRecord
         return $this->hasOne(State::className(), ['Id' => 'IdState']);
     }
     
+    /**
+     * @return array
+     */
     public function getStates(){
         $options = State::findAll(['KeyWord' => StringHelper::basename(self::class)]);
         return ArrayHelper::map($options, 'Id', 'Name');
@@ -120,6 +126,43 @@ class Extendedmodels extends \yii\db\ActiveRecord
                 $result[] = ['id' => $basename, 'text' =>$basename];
             }
             return ['results' => $result];
+        } catch (Exception $ex) {
+            throw $ex;
+        }
+    }
+    
+    public function afterFind() {
+        $this->namespacePath = $this->IdNameSpace ? $this->nameSpace->Value : null;
+        if($this->namespacePath){
+            $this->path = $this->namespacePath."\models\\".$this->KeyWord;
+            $this->model = new $this->path ;
+        }
+        return parent::afterFind();
+    }
+
+    public function getModelAttributes(){
+        try {
+            $attributes = [];
+            foreach ($this->model->attributes as $key => $attr){
+                $attributes[$key] = $this->model->getAttributeLabel($key);
+            }
+            return $attributes;
+        } catch (Exception $ex) {
+            throw $ex;
+        }
+    }
+    
+    public function getModelAttributeLabel($key = null){
+        try {
+            return $this->model->getAttributeLabel($key);
+        } catch (Exception $ex) {
+            throw $ex;
+        }
+    }
+    
+    public function getModelAttribute($key = null){
+        try {
+            return $this->model->getAttribute($key);
         } catch (Exception $ex) {
             throw $ex;
         }

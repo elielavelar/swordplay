@@ -3,6 +3,8 @@
 namespace common\models;
 
 use Yii;
+use common\models\Fields;
+
 use yii\helpers\ArrayHelper;
 use yii\helpers\StringHelper;
 use Exception;
@@ -58,15 +60,15 @@ class Extendedmodelfields extends \yii\db\ActiveRecord
     {
         return [
             'Id' => 'ID',
-            'IdExtendedModelKey' => 'Id Extended Model Key',
-            'IdField' => 'Id Field',
-            'CustomLabel' => 'Custom Label',
-            'Required' => 'Required',
-            'Sort' => 'Sort',
-            'CssClass' => 'Css Class',
-            'ColSpan' => 'Col Span',
-            'RowSpan' => 'Row Span',
-            'Description' => 'Description',
+            'IdExtendedModelKey' => 'Llave de Modelo',
+            'IdField' => 'Campo',
+            'CustomLabel' => 'Etiqueta Personalizada',
+            'Required' => 'Requerido',
+            'Sort' => 'Orden',
+            'CssClass' => 'Clase CSS',
+            'ColSpan' => 'Columnas',
+            'RowSpan' => 'Filas',
+            'Description' => 'Descripción',
         ];
     }
 
@@ -84,6 +86,17 @@ class Extendedmodelfields extends \yii\db\ActiveRecord
     public function getField()
     {
         return $this->hasOne(Fields::className(), ['id' => 'IdField']);
+    }
+    
+    public function getFields(){
+        $fields = Fields::find()
+                ->joinWith('state b')
+                ->where([
+                    'fields.KeyWord' => $this->extendedModelKey->extendedModel->KeyWord,
+                    'b.Code' => Fields::STATUS_ACTIVE,
+                ])
+                ->all();
+        return ArrayHelper::map($fields, 'Id', 'Name');
     }
 
     /**

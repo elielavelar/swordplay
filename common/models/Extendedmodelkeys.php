@@ -42,7 +42,18 @@ class Extendedmodelkeys extends \yii\db\ActiveRecord
             [['IdExtendedModel', 'IdState'], 'integer'],
             [['Description'], 'string'],
             [['AttributeKeyName', 'AttributeKeyValue'], 'string', 'max' => 100],
-            [['IdExtendedModel', 'AttributeKeyName', 'AttributeKeyValue'], 'unique', 'targetAttribute' => ['IdExtendedModel', 'AttributeKeyName', 'AttributeKeyValue']],
+            [['AttributeKeyValue'], 'unique'
+                , 'targetAttribute' => ['IdExtendedModel', 'AttributeKeyName', 'AttributeKeyValue']
+                , 'when' => function($model){
+                    return !empty($this->AttributeKeyValue);
+                },
+            ],
+            [['AttributeKeyName'], 'unique'
+                , 'targetAttribute' => ['IdExtendedModel', 'AttributeKeyName']
+                , 'when' => function($model){
+                    return empty($this->AttributeKeyValue);
+                },
+            ],
             [['IdExtendedModel'], 'exist', 'skipOnError' => true, 'targetClass' => Extendedmodels::className(), 'targetAttribute' => ['IdExtendedModel' => 'id']],
             [['IdState'], 'exist', 'skipOnError' => true, 'targetClass' => State::className(), 'targetAttribute' => ['IdState' => 'id']],
         ];
@@ -55,11 +66,11 @@ class Extendedmodelkeys extends \yii\db\ActiveRecord
     {
         return [
             'Id' => 'ID',
-            'IdExtendedModel' => 'Id Extended Model',
-            'AttributeKeyName' => 'Attribute Key Name',
-            'AttributeKeyValue' => 'Attribute Key Value',
-            'IdState' => 'Id State',
-            'Description' => 'Description',
+            'IdExtendedModel' => 'Modelo',
+            'AttributeKeyName' => 'Atributo Clave',
+            'AttributeKeyValue' => 'Valor Clave',
+            'IdState' => 'Estado',
+            'Description' => 'Descripción',
         ];
     }
 
@@ -86,6 +97,11 @@ class Extendedmodelkeys extends \yii\db\ActiveRecord
     {
         return $this->hasOne(State::className(), ['id' => 'IdState']);
     }
+    
+    public function getStates(){
+        $states = State::findAll(['KeyWord' => StringHelper::basename(self::class)]);
+        return ArrayHelper::map($states, 'Id', 'Name');
+    }
 
     /**
      * @return \yii\db\ActiveQuery
@@ -93,5 +109,10 @@ class Extendedmodelkeys extends \yii\db\ActiveRecord
     public function getExtendedmodelrecords()
     {
         return $this->hasMany(Extendedmodelrecords::className(), ['IdExtendedModelKey' => 'id']);
+    }
+    
+    public function beforeSave($insert) {
+        $this->AttributeKeyValue = empty($this->AttributeKeyValue) ? null: $this->AttributeKeyValue;
+        return parent::beforeSave($insert);
     }
 }

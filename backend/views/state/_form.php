@@ -35,8 +35,8 @@ use yii\widgets\ActiveForm;
     <div class="row">
         <div class="col-md-12">
             <span class="pull-right">
-                <?= Html::submitButton($model->isNewRecord ? 'Crear' : 'Guardar', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
-                <?= Html::a('Cancelar',['index'],['id'=>'btn-cancel','class'=>'btn btn-danger'])?>
+                <?= Html::submitButton('<i class="fas fa-save"></i> Guardar', ['class' => 'btn btn-success']) ?>
+                <?= Html::a('<i class="fas fa-times"></i> Cancelar',['index'],['id'=>'btn-cancel','class'=>'btn btn-danger'])?>
             </span>
         </div>
     </div>

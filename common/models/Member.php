@@ -76,7 +76,7 @@ class Member extends \yii\db\ActiveRecord {
      */
     public function attributeLabels() {
         return [
-            'Id' => 'ID',
+            'Id' => 'Id',
             'FirstName' => 'Primer Nombre',
             'SecondName' => 'Segundo Nombre',
             'ThirdName' => 'Tercer Nombre',
